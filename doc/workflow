@@ -1,0 +1,25 @@
+pass_1
+
+- parse the instruction:
+  * determine format
+  * if mnemonic belongs to an assembler directive:
+    - process directive
+    - parse next instruction
+  * look up opcode from symbols table
+  * if number of given operands does not much the format and op, raise error
+  * populate symbol table if any symbols are encountered
+
+pass_2
+
+- parse instruction:
+  * look up symbolic operands in symtable:
+    - if a symbol is undefined, raise error
+  * calculate target address
+  * calculate object code
+  * determine if instruction requires an M record
+  * pass instruction object code to Serializer
+
+- serialize instructions:
+  * write an M record if the instruction needs relocation
+  * attempt to append current instruction object code onto current T record:
+    - if maxlen is exceeded, write new T record

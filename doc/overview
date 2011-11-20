@@ -1,0 +1,61 @@
+1.0 - Hax Assembler Overviw
+The Hax Assembler (HASM) translates a hax assembly input (.hasm) file into a SIC/XE
+compatible object program (.obj) which can be loaded by the Hax Loader.
+
+1.1 - Hax Assembler Specifications
+
+- SIC Format 1 and Format 2 support
+- SIC/XE Format 3 and Format 4 support
+- Literals support
+- Program blocks support
+- Relocatable programs only
+- SIC/XE Register-to-Register instructions
+- Addressing modes supported:
+  1. Immediate addressing
+  2. Indirect addressing
+  3. Base-relative indexing
+  4. PC-relative indexing
+- Multi-pass assembling of input program
+
+1.2 - SIC/XE Format Specifications
+
+Instruction format field lengths are specified within {}, and are 1-bit long when
+the braces are omitted.
+
+1.2.0 - Format 1
+
+  Length: 1 byte
+  Format: [ opcode{8} ]
+
+1.2.1 - Format 2
+
+  Length: 2 bytes
+  Format: [ opcode{8} ][ r1{4} ][ r2{4} ]
+
+1.2.2 - Format 3
+
+  Length: 3 bytes
+  Format: [ opcode{6} ][n][i][x][b][p][e][ disp{12} ]
+
+1.2.3 - Format 4
+
+  Length: 4 bytes
+  Format: [ opcode{6} ][n][i][x][b][p][e][ target address{20} ]
+
+  Notation:
+
+  Format 4 instructions are denoted by prefixing the first operand with '+', ie:
+  +LDT    #MAXLEN
+
+1.3 - HASM Output Object Program Specification
+
+1.3.0 - Header Record
+1.3.1 - Text Records
+1.3.2 - Modification Records
+1.3.3 - End Record
+
+1.4 - SIC/XE Addressing Modes
+
+1.4.0 Simple Addressing
+1.4.1 Indirect Addressing
+1.4.2 Immediate Addressing

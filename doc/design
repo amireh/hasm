@@ -1,0 +1,33 @@
+* an input program:
+  * is a collection of SIC/XE instructions contained in a number of program blocks
+  * has an optional label
+  * has a start address of 0000 (can only be relocatable)
+  * must contain at least START and END instructions
+  * can contain comments denoted by .COMMENT
+
+* a program block:
+  # has many instructions
+  # has a unique name (unless no name is defined, then the default unnamed block is used)
+  # has a starting address
+  # has a length
+
+* an instruction:
+  # belongs to one of 4 SIC/XE formats
+  # has an operation mnemonic
+  # has a number of optional operands
+  # has an optional label
+  # has a location
+  # belongs to a program block
+  # is convertable into object code
+
+* an instruction's object code:
+  # directly depends on:
+    * mnemonic-translated operation code (opcode)
+    * addressing mode used in instruction
+    * the operands (their values or their addresses)
+    * optionally, base, index, or PC registers (B,X,PC)
+
+* an instruction's operand:
+  # could be a symbol
+  # could be a literal
+  # could be a constant
