@@ -19,6 +19,10 @@
  */
 
 #include "fmt2_instruction.hpp"
+#include "symbol.hpp"
+#include "parser.hpp"
+#include "symbol_manager.hpp"
+#include <cassert>
 
 namespace hax
 {
@@ -28,6 +32,7 @@ namespace hax
   : instruction(in_opcode, in_mnemonic)
   {
     format_ = format::fmt_two;
+    objcode_width_ = 4;
 	}
 
 	fmt2_instruction::~fmt2_instruction()
@@ -60,6 +65,49 @@ namespace hax
 
   void fmt2_instruction::calc_target_address()
   {
+    symbol_manager &sym_mgr = symbol_manager::singleton();
+    int target_address = 0x00;
+
+    assert(!operands_.empty());
+
+    // we have to split the operands, if there's more than one
+    string_t &operand_str = operands_.front();
+    bool has_two_operands = operand_str.find(",") != std::string::npos;
+    if (has_two_operands)
+    {
+      std::vector<string_t> operands_str = utility::split(operand_str, ',');
+      assert(operands_str.size() == 2);
+      // replace the first operand with the current one (the joined one)
+      operand_str = operands_str.front();
+      // and assign the new one
+      this->assign_operand(operands_str.back());
+    } else {
+      string_t operand_str = "0";
+      this->assign_operand(operand_str); // second operand is nil
+    }
+
+    assert(operands_.size() == 2);
+
+    symbol_t *lhs = sym_mgr.lookup(operands_.front());
+    symbol_t *rhs = sym_mgr.lookup(operands_.back());
+
+    using utility::stringify;
+
+    //string_t target_address_str = stringify(lhs->address()) + stringify(rhs->address());
+    std::ostringstream tastr;
+    tastr << lhs->address() << rhs->address();
+    objcode_ = (opcode_ << 8) | utility::convertTo<int>(tastr.str());
+    //~ objcode_ <<= 8;
+
+    if (VERBOSE)
+    std::cout
+      << "Format2 address = "
+      << std::hex << std::uppercase
+      << tastr.str() << "\n";
+
+    // discard the 5 highest-order half-bytes (for negative values calculated with 2's complement)
+    //int foo = (opcode_ << 24) | addr_mode_ | targeting_flags;
+    //objcode_ = utility::overwrite_bits<int>(disp, foo, 20, 12) | (0x1 << 20);
   }
 
   bool fmt2_instruction::is_valid() const

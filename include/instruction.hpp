@@ -142,6 +142,7 @@ namespace hax
     uint32_t objcode_;
     bool indexed_;
     string_t mnemonic_;
+    uint8_t objcode_width_;
 
     private:
 	};

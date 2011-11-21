@@ -32,6 +32,25 @@ namespace hax
 
 	symbol_manager::symbol_manager()
   {
+
+    // special symbol for internal usage:
+    // format3/4 instructions that require no arguments (like RSUB) are assigned
+    // "0" as their operand, hence we define
+    // "0" as an actual symbol that points to address 0x0000, in the spirit of
+    // keeping a uniform interface for all format3/4 instructions
+    define(declare("0"), 0);
+
+    // SIC/XE registers
+    define(declare("A"),  0x00);
+    define(declare("X"),  0x01);
+    define(declare("L"),  0x02);
+    define(declare("B"),  0x03);
+    define(declare("S"),  0x04);
+    define(declare("T"),  0x05);
+    define(declare("F"),  0x06);
+    define(declare("PC"), 0x08);
+    define(declare("SW"), 0x09);
+
 	}
 
 	symbol_manager::~symbol_manager()

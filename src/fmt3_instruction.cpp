@@ -64,7 +64,7 @@ namespace hax
     if (mnemonic_ == "RSUB")
     {
       if (operands_.empty())
-        operands_.push_back("#0");
+        operands_.push_back("0");
     }
   }
 

@@ -33,6 +33,7 @@ namespace hax
   : instruction(in_opcode, in_mnemonic)
   {
     format_ = format::fmt_four;
+    objcode_width_ = 8;
 	}
 
 	fmt4_instruction::~fmt4_instruction()

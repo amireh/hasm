@@ -36,7 +36,8 @@ namespace hax
     addr_mode_(addressing_mode::undefined),
     objcode_(0x000000),
     indexed_(false),
-    mnemonic_(in_mnemonic)
+    mnemonic_(in_mnemonic),
+    objcode_width_(6)
   {
 	}
 
@@ -131,7 +132,7 @@ namespace hax
     for (auto token : operands_) out << " " << token;
 
     if (objcode_)
-      out << "\t\t" << std::hex << std::setw(6) << std::setfill('0') << objcode_;
+      out << "\t\t" << std::hex << std::setw(objcode_width_) << std::setfill('0') << objcode_;
 
     out << std::nouppercase;
 
