@@ -1,0 +1,5 @@
+COPY    START   0       . 0000
+FIRST   STL     RETADR  . 0000
+SECOND  STL     RETADR  . 0000
+RETADR  BYTE    1       . 0003
+        END     FIRST   . 0004

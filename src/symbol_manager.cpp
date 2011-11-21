@@ -62,7 +62,7 @@ namespace hax
 
   void symbol_manager::define(symbol_t *in_symbol, loc_t in_loc)
   {
-
+    in_symbol->set_address(in_loc);
   }
 
   symbol_t *const symbol_manager::lookup(string_t const& in_label) const

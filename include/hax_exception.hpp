@@ -47,15 +47,37 @@ namespace hax {
 		{ }
 	};
 
+	class invalid_addressing_mode : public std::runtime_error {
+	public:
+		inline invalid_addressing_mode(const std::string& s)
+		: std::runtime_error(s)
+		{ }
+	};
+
 	class undefined_symbol : public std::runtime_error {
 	public:
 		inline undefined_symbol(const std::string& s)
 		: std::runtime_error(s)
 		{ }
 	};
+
+	class unrecognized_operation : public std::runtime_error {
+	public:
+		inline unrecognized_operation(const std::string& s)
+		: std::runtime_error(s)
+		{ }
+	};
+
 	class symbol_redifinition : public std::runtime_error {
 	public:
 		inline symbol_redifinition(const std::string& s)
+		: std::runtime_error(s)
+		{ }
+	};
+
+	class target_out_of_bounds : public std::runtime_error {
+	public:
+		inline target_out_of_bounds(const std::string& s)
 		: std::runtime_error(s)
 		{ }
 	};

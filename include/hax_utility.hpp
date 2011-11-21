@@ -105,6 +105,11 @@ namespace hax { namespace utility {
     return out;
   }
 
+  template<typename IntType>
+  IntType overwrite_bits(IntType dst, IntType src, int pos, int len) {
+      IntType mask = (((IntType)1 << len) - 1) << pos;
+      return (dst & ~mask) | (src & mask);
+  }
 } // utility namespace
 } // hax namespace
 

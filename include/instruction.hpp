@@ -23,54 +23,79 @@
 
 #include "hax.hpp"
 #include "loggable.hpp"
-#include "symbol.hpp"
 #include <vector>
 
 namespace hax
 {
+  extern bool VERBOSE;
+
+  class symbol;
+  typedef symbol symbol_t;
+
   typedef enum {
-    undefined = 0x00,
-    one = 0x01,
-    two = 0x02,
-    three = 0x03,
-    four = 0x04,
-    directive = 0x05
+    fmt_undefined = 0x00,
+    fmt_one = 0x01,
+    fmt_two = 0x02,
+    fmt_three = 0x03,
+    fmt_four = 0x04,
+    fmt_directive = 0x05
   } format;
 
   class instruction : public loggable {
     public:
 
     enum addressing_mode {
-      simple = 0x00,
-      indirect = 0x01,
-      immediate = 0x02
+      undefined = 0xFFFFFF,
+      simple = 0x030000,
+      indirect = 0x020000,
+      immediate = 0x010000
     };
 
     typedef addressing_mode addressing_mode_t;
 
-		instruction();
+    instruction() = delete;
+		explicit instruction(opcode_t, const string_t&);
     instruction(const instruction& src);
 		instruction& operator=(const instruction& rhs);
 		virtual ~instruction();
 
     opcode_t opcode() const;
-
     loc_t location() const;
-    void set_location(loc_t);
-
-    loc_t length() const;
-
-    void register_token(string_t const&);
 
     /**
-     * once all tokens are registered, this routine determines the format of
-     * this instruction, the opcode, its symbols and operands
+     * the length of an instruction is calculated based on its format
      **/
-    virtual void process_tokens();
+    virtual loc_t length() const=0;
 
-    void calc_target_address();
+    virtual void calc_target_address()=0;
 
-    int nr_tokens() const;
+    /**
+     * an instruction is valid when:
+     *  1 - the opcode exists is registered in the optable
+     *  2 - all operands registered are valid and match the format specifications
+     **/
+    virtual bool is_valid() const=0;
+
+    /**
+     * this routine gives a chance for certain format objects to "bootstrap"
+     * before any attempt to resolve operands or calculate object code is made
+     *
+     * @note
+     * this method will be called AFTER the label, opcode, and all operands are assigned
+     **/
+    virtual void preprocess();
+
+    //void register_token(string_t const&);
+    void assign_location(loc_t);
+    void assign_label(symbol_t* const);
+    void assign_operand(string_t const&);
+
+    void resolve_references();
+
+    void assign_line(string_t const&);
+
+
+    //int nr_tokens() const;
 
     /**
      * is this instruction labelled?
@@ -78,13 +103,6 @@ namespace hax
     bool has_label() const;
 
     symbol_t const* const label() const;
-
-    /**
-     * an instruction is valid when:
-     *  1 - the opcode exists is registered in the optable
-     *  2 - all operands registered are valid and match the format specifications
-     **/
-    bool is_valid() const;
 
     /**
      * are there no dependencies left for this symbol_manager's object code to be
@@ -95,7 +113,10 @@ namespace hax
     virtual string_t dump() const;
 
     protected:
-    typedef std::vector<string_t> tokens_t;
+    typedef std::vector<string_t> operands_t;
+
+    virtual void copy_from(const instruction&);
+    virtual std::ostream& to_stream(std::ostream&) const;
 
     /**
      * the opcode is automatically set when the instruction is created by looking
@@ -110,21 +131,21 @@ namespace hax
     loc_t location_;
     loc_t length_;
 
-    symbol_t *label_;
+    symbol_t* label_;
 
-    tokens_t tokens_;
+    operands_t operands_;
 
     format_t format_;
 
     addressing_mode_t addr_mode_;
-
+    string_t line_;
+    uint32_t objcode_;
     bool indexed_;
-
-    void copy_from(const instruction&);
-    bool is_sicxe() const;
-    virtual std::ostream& to_stream(std::ostream&) const;
+    string_t mnemonic_;
 
     private:
 	};
+
+  typedef instruction instruction_t;
 } // end of namespace
 #endif // h_instruction_h

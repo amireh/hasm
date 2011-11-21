@@ -49,6 +49,12 @@ namespace hax
      **/
     opcode_fmt_t opcode_from_token(string_t const&, int* ec);
 
+    bool is_op(string_t const& token) const;
+    bool is_directive(string_t const& token) const;
+
+    loc_t base() const;
+    void set_base(loc_t in_loc);
+
     protected:
     typedef std::map<string_t, std::tuple<int, char> > optable_t;
     typedef std::list<inst_t*> instructions_t;
@@ -61,7 +67,8 @@ namespace hax
 
     loc_t locctr_;
     optable_t optable_;
-    instructions_t instructions;
+    instructions_t instructions_;
+    loc_t base_;
 
     private:
     static parser *__instance;

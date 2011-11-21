@@ -18,51 +18,33 @@
  *  along with HASM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef h_symbol_h
-#define h_symbol_h
+#ifndef h_directive_h
+#define h_directive_h
 
-#include "hax.hpp"
-#include "loggable.hpp"
-#include <vector>
+#include "instruction.hpp"
 
 namespace hax
 {
-  class symbol : public loggable {
+  class directive : public instruction {
     public:
 
-    symbol()=delete;
-		explicit symbol(string_t const& in_label);
-    symbol(const symbol& src);
-		symbol& operator=(const symbol& rhs);
-		virtual ~symbol();
+    directive() = delete;
+		explicit directive(opcode_t, string_t const& in_mnemonic);
+    directive(const directive& src);
+		directive& operator=(const directive& rhs);
+		virtual ~directive();
 
-    string_t const& label() const;
-    int value() const;
-    loc_t address() const;
-    bool is_resolved() const;
-
-    void set_address(loc_t);
+    virtual loc_t length() const;
+    virtual void calc_target_address();
+    virtual bool is_valid() const;
+    virtual void preprocess();
 
     protected:
+    void copy_from(const directive&);
 
-    string_t label_;
-    loc_t address_;
-    int value_;
-
-    /**
-     * the reason we use a flag to indicate whether this symbol has already been
-     * defined is because we can't rely on address_ being 0x000 as that is a valid
-     * address
-     **/
-    bool is_resolved_;
-
-    void copy_from(const symbol&);
+    string_t op_;
 
     private:
-
-    virtual std::ostream& to_stream(std::ostream&) const;
 	};
-
-  typedef symbol symbol_t;
 } // end of namespace
-#endif // h_symbol_h
+#endif // h_directive_h

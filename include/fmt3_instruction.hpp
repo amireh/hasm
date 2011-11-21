@@ -18,51 +18,38 @@
  *  along with HASM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef h_symbol_h
-#define h_symbol_h
+#ifndef h_fmt3_instruction_h
+#define h_fmt3_instruction_h
 
-#include "hax.hpp"
-#include "loggable.hpp"
-#include <vector>
+#include "instruction.hpp"
 
 namespace hax
 {
-  class symbol : public loggable {
+  class fmt3_instruction : public instruction {
     public:
 
-    symbol()=delete;
-		explicit symbol(string_t const& in_label);
-    symbol(const symbol& src);
-		symbol& operator=(const symbol& rhs);
-		virtual ~symbol();
+		fmt3_instruction() = delete;
+		explicit fmt3_instruction(opcode_t, const string_t&);
+    fmt3_instruction(const fmt3_instruction& src);
+		fmt3_instruction& operator=(const fmt3_instruction& rhs);
+		virtual ~fmt3_instruction();
 
-    string_t const& label() const;
-    int value() const;
-    loc_t address() const;
-    bool is_resolved() const;
+    virtual loc_t length() const;
+    virtual void calc_target_address();
+    virtual bool is_valid() const;
 
-    void set_address(loc_t);
+    virtual void preprocess();
 
     protected:
+    void copy_from(const fmt3_instruction&);
 
-    string_t label_;
-    loc_t address_;
-    int value_;
+    void find_addressing_mode();
 
-    /**
-     * the reason we use a flag to indicate whether this symbol has already been
-     * defined is because we can't rely on address_ being 0x000 as that is a valid
-     * address
-     **/
-    bool is_resolved_;
-
-    void copy_from(const symbol&);
+    bool pc_relative_viable(int& address) const;
+    bool base_relative_viable(int& address) const;
+    bool immediate_viable(int& address) const;
 
     private:
-
-    virtual std::ostream& to_stream(std::ostream&) const;
 	};
-
-  typedef symbol symbol_t;
 } // end of namespace
-#endif // h_symbol_h
+#endif // h_fmt3_instruction_h

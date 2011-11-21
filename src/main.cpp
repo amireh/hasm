@@ -19,8 +19,13 @@
  */
 
 #include <iostream>
+#include "hax.hpp"
 #include "parser.hpp"
 #include "hax_utility.hpp"
+
+namespace hax {
+  bool VERBOSE = false;
+}
 
 int main(int argc, char** argv)
 {
@@ -29,6 +34,14 @@ int main(int argc, char** argv)
     std::cout << "usage: hasm input.hasm [outfile]\n";
     return 0;
   }
+
+  for (int i=2; i < argc; ++i)
+  {
+    if (std::string(argv[i]) == "-v")
+      hax::VERBOSE = true;
+  }
+
+  //~ std::cout << std::hex << 0x33 - 0x0D << "\n"; return 1;
 
   // input hasm file
   std::string _in = argv[1];

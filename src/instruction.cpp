@@ -27,12 +27,16 @@ namespace hax
 {
   using utility::stringify;
 
-	instruction::instruction()
-  : opcode_(0),
+	instruction::instruction(opcode_t in_opcode, string_t const& in_mnemonic)
+  : opcode_(in_opcode),
     location_(0),
+    length_(0),
     label_(0),
-    format_(format::undefined),
-    indexed_(false)
+    format_(format::fmt_undefined),
+    addr_mode_(addressing_mode::undefined),
+    objcode_(0x000000),
+    indexed_(false),
+    mnemonic_(in_mnemonic)
   {
 	}
 
@@ -58,18 +62,19 @@ namespace hax
     this->opcode_ = src.opcode_;
     this->location_ = src.location_;
     this->label_ = src.label_;
-    this->tokens_ = src.tokens_;
+    this->operands_ = src.operands_;
     this->format_ = src.format_;
     this->length_ = src.length_;
+    this->addr_mode_ = src.addr_mode_;
     this->indexed_ = src.indexed_;
   }
 
-  void instruction::register_token(string_t const& in_token)
+  /*void instruction::register_token(string_t const& in_token)
   {
-    tokens_.push_back(in_token);
-  }
+    operands_.push_back(in_token);
+  }*/
 
-  void instruction::set_location(loc_t in_loc)
+  void instruction::assign_location(loc_t in_loc)
   {
     location_ = in_loc;
 
@@ -79,25 +84,56 @@ namespace hax
     }
   }
 
+  void instruction::assign_label(symbol_t* in_label)
+  {
+    label_ = in_label;
+
+    //symbol_manager::singleton().declare(label_->label(), location());
+  }
+
+  void instruction::assign_operand(string_t const& in_token)
+  {
+    operands_.push_back(in_token);
+    if (in_token.find(",X") != std::string::npos)
+    {
+      indexed_ = true;
+      string_t &operand = operands_.back();
+      operand = operand.substr(0, operand.size()-2);
+    }
+  }
+
   loc_t instruction::location() const
   {
     return location_;
   }
 
+  void instruction::preprocess()
+  {
+  }
+
   std::ostream& instruction::to_stream(std::ostream& out) const
   {
-    out << "[i ";
-
-    out << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)opcode_;
-    out << " @ ";
-    out << "0x" << std::hex << std::setw(3) << std::setfill('0') << (int)location_;
+    out << std::uppercase;
+    out << "0x" << std::hex << std::setw(4) << std::setfill('0') << (int)location_;
+    out << "\t";
 
     if (label_)
-      out << " '" << label_->label() << "'";
+      out << "'" << label_->label() << "'";
 
-    out << " <= ";
-    for (auto token : tokens_) out << " " << token;
-    out << "]";
+    if (!label_ || label_->label().size() <= 5)
+      out << "\t";
+
+    out << "\t";
+    out << mnemonic_;
+    out << "\t(0x" << std::hex << std::setw(2) << std::setfill('0') << (int)opcode_;
+    out << ")\t";
+
+    for (auto token : operands_) out << " " << token;
+
+    if (objcode_)
+      out << "\t\t" << std::hex << std::setw(6) << std::setfill('0') << objcode_;
+
+    out << std::nouppercase;
 
     return out;
   }
@@ -111,9 +147,9 @@ namespace hax
     out << "\tLocation: 0x" << std::hex << std::setw(3) << std::setfill('0') << (int)location_ << std::endl;
     out << "\tLabel: " << (label_ ? label_->label() : "undefined") << "\n";
 
-    out << "\tTokens [" << tokens_.size() << "]:\n";
+    out << "\tTokens [" << operands_.size() << "]:\n";
     int ctr = 0;
-    for (auto token : tokens_)
+    for (auto token : operands_)
     {
       out << "\t\t" << ctr << ". " << token << "\n";
       ++ctr;
@@ -122,14 +158,14 @@ namespace hax
     return out.str();
   }
 
-  void instruction::process_tokens()
+  /*void instruction::process_tokens()
   {
-    if (tokens_.empty())
+    if (operands_.empty())
       return;
 
     // if there's one token registered, then it's either a Format 1 instruction
     // or an assembler directive
-    if (tokens_.size() == 1)
+    if (operands_.size() == 1)
     {
       // TODO: implement assembler directives
       // TODO: implement format 1 instruction handler
@@ -150,7 +186,7 @@ namespace hax
     //    then the first token is a label
     bool has_label = false;
     {
-      std::string token = tokens_.at(idx);
+      std::string token = operands_.at(idx);
       if (token[0] == '+')
         token = token.substr(1, token.size());
 
@@ -160,7 +196,7 @@ namespace hax
       {
         // declare the symbol in the symtable
         label_ = symbol_manager::singleton().declare(token);
-        //tokens_.pop_front();
+        //operands_.pop_front();
       } else
         --idx;
 
@@ -168,15 +204,15 @@ namespace hax
     }
 
     // parse the opcode & format now
-    //~ std::string &token = tokens_.front();
-    std::string token = tokens_.at(++idx);
+    //~ std::string &token = operands_.front();
+    std::string token = operands_.at(++idx);
     if (token[0] == '+')
         token = token.substr(1, token.size());
     opcode_fmt_t tuple = parser::singleton().opcode_from_token(token, &ec);
     if (ec != 0)
     {
       std::string msg = "";
-      for (auto token : tokens_) msg += " " + token;
+      for (auto token : operands_) msg += " " + token;
 
       throw invalid_opcode("unrecognized opcode for mnemonic:" + msg);
     }
@@ -192,12 +228,12 @@ namespace hax
     }
     // discard this token, we're done with it
     ++idx;
-    //~ tokens_.pop_front();
+    //~ operands_.pop_front();
 
     // is the operand indexed?
     indexed_ =
-      tokens_.back().size() > 2 &&
-      tokens_.back().substr(tokens_.back().size() - 2) == ",X";
+      operands_.back().size() > 2 &&
+      operands_.back().substr(operands_.back().size() - 2) == ",X";
 
     // rest of the tokens now are operands
     //calc_target_address();
@@ -205,7 +241,7 @@ namespace hax
 
   void instruction::calc_target_address()
   {
-    string_t &token = tokens_.front();
+    string_t &token = operands_.front();
 
     if (is_sicxe())
     {
@@ -236,10 +272,10 @@ namespace hax
 
   int instruction::nr_tokens() const
   {
-    return tokens_.size();
-  }
+    return operands_.size();
+  }*/
 
-  loc_t instruction::length() const
+  /*loc_t instruction::length() const
   {
     switch(format_)
     {
@@ -264,6 +300,20 @@ namespace hax
         out << this;
         throw invalid_format("attempting to index length of an instruction with no format: " + out.str());
     }
+  }*/
+  void instruction::resolve_references()
+  {
+    //if (resolved_)
+    //  return;
+
+    //for (auto operand : operands_)
+    //{
+    //
+    //}
   }
 
+  void instruction::assign_line(string_t const& in_entry)
+  {
+    line_ = in_entry;
+  }
 } // end of namespace

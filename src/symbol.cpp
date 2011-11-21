@@ -30,6 +30,7 @@ namespace hax
 	symbol::symbol(string_t const& in_label)
   : label_(in_label),
     address_(0x0000),
+    value_(0),
     is_resolved_(false)
   {
 	}
@@ -91,6 +92,11 @@ namespace hax
   loc_t symbol::address() const
   {
     return address_;
+  }
+
+  int symbol::value() const
+  {
+    return value_;
   }
 
 } // end of namespace
