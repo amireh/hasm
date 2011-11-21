@@ -55,6 +55,7 @@ namespace hax
 
     bool is_delimiter(char);
     void populate_optable();
+    void register_op(std::string, opcode_t, format_t);
 
     inst_t* parse_instruction(std::string const& in_line);
 

@@ -24,16 +24,17 @@
 #include "hax.hpp"
 #include "loggable.hpp"
 #include "symbol.hpp"
-#include <list>
+#include <vector>
 
 namespace hax
 {
   typedef enum {
+    undefined = 0x00,
     one = 0x01,
     two = 0x02,
-    three = 0x04,
-    four = 0x08,
-    undefined = 0x16
+    three = 0x03,
+    four = 0x04,
+    directive = 0x05
   } format;
 
   class instruction : public loggable {
@@ -67,6 +68,8 @@ namespace hax
      **/
     virtual void process_tokens();
 
+    void calc_target_address();
+
     int nr_tokens() const;
 
     /**
@@ -89,8 +92,10 @@ namespace hax
      **/
     bool is_fulfilled() const;
 
+    virtual string_t dump() const;
+
     protected:
-    typedef std::list<string_t> tokens_t;
+    typedef std::vector<string_t> tokens_t;
 
     /**
      * the opcode is automatically set when the instruction is created by looking
@@ -112,6 +117,8 @@ namespace hax
     format_t format_;
 
     addressing_mode_t addr_mode_;
+
+    bool indexed_;
 
     void copy_from(const instruction&);
     bool is_sicxe() const;

@@ -36,15 +36,30 @@ namespace hax
 		virtual ~symbol_manager();
 
     /**
-     * registers the given symbol in the symbol table if it hasn't been declared
-     * already
+     * registers a symbol with the given name in the symbol table if it hasn't
+     * been declared already
      **/
-    symbol_t* const declare(string_t const&);
+    symbol_t* const declare(string_t const& in_name);
 
     /**
      * assigns the address in_loc to the given symbol in_symbol
      **/
     void define(symbol_t* in_symbol, loc_t in_loc);
+
+    /**
+     * returns the symbol identified by name in_name, or 0 in case it wasn't found
+     **/
+    symbol_t* const lookup(string_t const& in_name) const;
+
+    /**
+     * convenience method for checking whether a symbol has been declared
+     **/
+    bool is_declared(string_t const& in_name) const;
+
+    /**
+     * convenience method for checking whether a symbol has been fully registered
+     **/
+    bool is_defined(string_t const& in_name) const;
 
     protected:
     typedef std::map<string_t, symbol_t*> symbols_t;

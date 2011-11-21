@@ -55,16 +55,72 @@ namespace hax
 		return *singleton_ptr();
 	}
 
+  void parser::register_op(std::string in_mnemonic, opcode_t in_code, format_t in_fmt)
+  {
+    optable_.insert(std::make_pair(in_mnemonic, std::make_tuple(in_code, in_fmt)));
+  }
+
   void parser::populate_optable()
   {
-    using std::make_pair;
-    using std::make_tuple;
 
-    optable_.insert(make_pair("ADD", make_tuple<opcode_t, format_t>(0x18, format::three | format::four)));
-    optable_.insert(make_pair("STL", make_tuple<opcode_t, format_t>(0x14, format::three | format::four)));
-    optable_.insert(make_pair("JSUB", make_tuple<opcode_t, format_t>(0x48, format::three | format::four)));
-    optable_.insert(make_pair("LDA", make_tuple<opcode_t, format_t>(0x00, format::three | format::four)));
-    optable_.insert(make_pair("COMP", make_tuple<opcode_t, format_t>(0x28, format::three | format::four)));
+    register_op("ADD",    0x18, format::three | format::four);
+    register_op("ADDR",   0x90, format::two);
+    register_op("AND",    0x40, format::three | format::four);
+    register_op("CLEAR",  0xB4, format::two);
+    register_op("COMP",   0x28, format::three | format::four);
+    register_op("COMPR",  0xA0, format::two);
+    register_op("DIV",    0x24, format::three | format::four);
+    register_op("DIVR",   0x9C, format::two);
+    register_op("HIO",    0xF4, format::one);
+    register_op("J",      0x3C, format::three | format::four);
+    register_op("JEQ",    0x30, format::three | format::four);
+    register_op("JGT",    0x34, format::three | format::four);
+    register_op("JLT",    0x38, format::three | format::four);
+    register_op("JSUB",   0x48, format::three | format::four);
+    register_op("LDA",    0x00, format::three | format::four);
+    register_op("LDB",    0x68, format::three | format::four);
+    register_op("LDCH",   0x50, format::three | format::four);
+    register_op("LDF",    0x70, format::three | format::four);
+    register_op("LDL",    0x08, format::three | format::four);
+    register_op("LDS",    0x6C, format::three | format::four);
+    register_op("LDT",    0x74, format::three | format::four);
+    register_op("LDX",    0x04, format::three | format::four);
+    register_op("MUL",    0x20, format::three | format::four);
+    register_op("OR",     0x44, format::two);
+    register_op("RD",     0xD8, format::three | format::four);
+    register_op("RSUB",   0x4C, format::three | format::four);
+    register_op("SHIFTL", 0xA4, format::two);
+    register_op("SHIFTR", 0xA8, format::two);
+    register_op("SIO",    0xF0, format::one);
+    register_op("STA",    0x0C, format::three | format::four);
+    register_op("STB",    0x78, format::three | format::four);
+    register_op("STCH",   0x54, format::three | format::four);
+    register_op("STI",    0xD4, format::three | format::four);
+    register_op("STL",    0x14, format::three | format::four);
+    register_op("STS",    0x7C, format::three | format::four);
+    register_op("STSW",   0xE8, format::three | format::four);
+    register_op("STT",    0x84, format::three | format::four);
+    register_op("STX",    0x10, format::three | format::four);
+    register_op("SUB",    0x1C, format::three | format::four);
+    register_op("SUBR",   0x94, format::two);
+    register_op("TD",     0xE0, format::three | format::four);
+    register_op("TIO",    0xF8, format::one);
+    register_op("TIX",    0x2C, format::three | format::four);
+    register_op("TIXR",   0xB8, format::two);
+    register_op("WD",     0xDC, format::three | format::four);
+
+    register_op("START",  0x00, format::directive);
+    register_op("END",    0x00, format::directive);
+    register_op("USE",    0x00, format::directive);
+    register_op("CLEAR",  0x00, format::directive);
+    register_op("EQU",    0x00, format::directive);
+    register_op("RESW",   0x00, format::directive);
+    register_op("RESB",   0x00, format::directive);
+    register_op("BYTE",   0x00, format::directive);
+    register_op("WORD",   0x00, format::directive);
+    register_op("*",      0x00, format::directive);
+
+    std::cout << "registered " << optable_.size() << " SIC/XE operations\n";
   }
 
   bool parser::is_delimiter(char c)
@@ -110,20 +166,31 @@ namespace hax
     }
 
     // __DEBUG__ : skip the START record
-    while (in.get() != '\n');;
+    //~ while (in.get() != '\n');;
 
-    //~ while (!in.eof())
-    for (int i=0; i < 4; ++i)
+    while (!in.eof())
+    //~ for (int i=0; i < 4; ++i)
     {
       string_t token = "";
       instruction* inst = new instruction();
+      bool discard = false;
+      string_t line = "";
       while (true)
       {
         char c = in.get();
+        line += c;
+
+        if (c == '.')
+        {
+          while (in.get() != '\n');;
+
+          discard = true;
+          break;
+        }
 
         if (c == '\n' || in.eof())
         {
-          //std::cout << "found an end of line : " << c << ", breaking\n";
+          //~ std::cout << "parsed line: " << line;
           if (!token.empty())
           {
             inst->register_token(token);
@@ -145,12 +212,21 @@ namespace hax
         }
       }
 
+      // checking for line size is required for rubbish that should not be parsed
+      // at end of files (symptom produced on Arch Linux using vim and geany editor)
+      if (discard || line.size() < 2)
+      {
+        delete inst;
+        discard = false;
+        continue;
+      }
+
       inst->process_tokens();
       inst->set_location(locctr_);
 
       locctr_ += inst->length();
 
-      std::cout << inst;
+      std::cout << inst << "\n";
 
       instructions.push_back(inst);
       inst = 0;

@@ -38,13 +38,13 @@ int main(int argc, char** argv)
     _out = argv[2];
 
   hax::parser& _parser = hax::parser::singleton();
-  try {
+  //try {
     _parser.process(_in, _out);
-  } catch (std::exception& e) {
+  /*} catch (std::exception& e) {
     std::cerr << "fatal: an exception was raised during parsing `" << e.what() << "`\n";
     std::cerr << "aborted\n";
     return 1;
-  }
+  }*/
 
   return 0;
 }

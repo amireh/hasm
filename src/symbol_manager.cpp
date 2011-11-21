@@ -65,4 +65,26 @@ namespace hax
 
   }
 
+  symbol_t *const symbol_manager::lookup(string_t const& in_label) const
+  {
+    symbols_t::const_iterator entry = symbols_.find(in_label);
+    if (entry == symbols_.end())
+      return 0;
+
+    return entry->second;
+  }
+
+  bool symbol_manager::is_declared(string_t const& in_name) const
+  {
+    return symbols_.find(in_name) != symbols_.end();
+  }
+
+  bool symbol_manager::is_defined(string_t const& in_name) const
+  {
+    symbol_t *const sym = lookup(in_name);
+    if (!sym)
+      return false;
+
+    return sym->is_resolved();
+  }
 } // end of namespace

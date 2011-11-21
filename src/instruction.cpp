@@ -31,7 +31,8 @@ namespace hax
   : opcode_(0),
     location_(0),
     label_(0),
-    format_(format::undefined)
+    format_(format::undefined),
+    indexed_(false)
   {
 	}
 
@@ -60,6 +61,7 @@ namespace hax
     this->tokens_ = src.tokens_;
     this->format_ = src.format_;
     this->length_ = src.length_;
+    this->indexed_ = src.indexed_;
   }
 
   void instruction::register_token(string_t const& in_token)
@@ -84,6 +86,26 @@ namespace hax
 
   std::ostream& instruction::to_stream(std::ostream& out) const
   {
+    out << "[i ";
+
+    out << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)opcode_;
+    out << " @ ";
+    out << "0x" << std::hex << std::setw(3) << std::setfill('0') << (int)location_;
+
+    if (label_)
+      out << " '" << label_->label() << "'";
+
+    out << " <= ";
+    for (auto token : tokens_) out << " " << token;
+    out << "]";
+
+    return out;
+  }
+
+  string_t instruction::dump() const
+  {
+    std::ostringstream out;
+
     out << "Instruction:\n";
     out << "\tOpcode: 0x" << std::hex << std::setw(2) << std::setfill('0') << (int)opcode_ << std::endl;
     out << "\tLocation: 0x" << std::hex << std::setw(3) << std::setfill('0') << (int)location_ << std::endl;
@@ -97,37 +119,66 @@ namespace hax
       ++ctr;
     }
 
-    return out;
+    return out.str();
   }
 
   void instruction::process_tokens()
   {
+    if (tokens_.empty())
+      return;
+
+    // if there's one token registered, then it's either a Format 1 instruction
+    // or an assembler directive
+    if (tokens_.size() == 1)
+    {
+      // TODO: implement assembler directives
+      // TODO: implement format 1 instruction handler
+      format_ = format::directive;
+      std::cout << "warning: assembler directives and format 1 instructions are not yet supported\n";
+      return;
+    }
+
+    // idx is used to point at the current token we'll be processing
+    int idx = 0;
+
+    // if ec is set to anything other than 0 then the mnemonic for this instruction
+    // is unrecognized (used by parser::opcode_from_token)
+    int ec = -1;
+
     // 1. find out whether this instruction is labelled, we do that by checking
     //    if the first registered token is a mnemonic for an opcode, if it isn't
     //    then the first token is a label
     bool has_label = false;
-    int ec = -1;
-
     {
-      std::string &token = tokens_.front();
+      std::string token = tokens_.at(idx);
+      if (token[0] == '+')
+        token = token.substr(1, token.size());
+
       parser::singleton().opcode_from_token(token, &ec);
       has_label = ec != 0;
       if (has_label)
       {
         // declare the symbol in the symtable
         label_ = symbol_manager::singleton().declare(token);
-        tokens_.pop_front();
-      }
+        //tokens_.pop_front();
+      } else
+        --idx;
 
       ec = -1;
     }
 
     // parse the opcode & format now
-    std::string &token = tokens_.front();
+    //~ std::string &token = tokens_.front();
+    std::string token = tokens_.at(++idx);
+    if (token[0] == '+')
+        token = token.substr(1, token.size());
     opcode_fmt_t tuple = parser::singleton().opcode_from_token(token, &ec);
     if (ec != 0)
     {
-      throw invalid_opcode("unregistered or identified opcode for mnemonic: " + token);
+      std::string msg = "";
+      for (auto token : tokens_) msg += " " + token;
+
+      throw invalid_opcode("unrecognized opcode for mnemonic:" + msg);
     }
 
     opcode_ = std::get<0>(tuple);
@@ -139,9 +190,37 @@ namespace hax
       // extended instruction opcode fields (format 4) are prefixed with '+'
       format_ = (token[0] == '+') ? format::four : format::three;
     }
+    // discard this token, we're done with it
+    ++idx;
+    //~ tokens_.pop_front();
+
+    // is the operand indexed?
+    indexed_ =
+      tokens_.back().size() > 2 &&
+      tokens_.back().substr(tokens_.back().size() - 2) == ",X";
 
     // rest of the tokens now are operands
+    //calc_target_address();
+  }
 
+  void instruction::calc_target_address()
+  {
+    string_t &token = tokens_.front();
+
+    if (is_sicxe())
+    {
+      // format 3 + 4 always have n and i bits set to 1
+      // is it format 4?
+      if ((format_ & format::four) == format::four)
+      {
+        // strip out the leading '#'
+        token = token.substr(1, token.size());
+      } else
+      {
+
+      }
+      // find out
+    }
   }
 
   bool instruction::is_sicxe() const
@@ -176,8 +255,14 @@ namespace hax
       case format::four:
         return 4;
         break;
+      case format::directive:
+        return 3;
+        // TODO: implement length count for assembler directives
+        break;
       default:
-        throw invalid_format("attempting to index length of an instruction with no format!");
+        std::ostringstream out;
+        out << this;
+        throw invalid_format("attempting to index length of an instruction with no format: " + out.str());
     }
   }
 
