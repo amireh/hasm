@@ -71,6 +71,40 @@ namespace hax { namespace utility {
       return elems;
   }
 
+  inline static
+  void itrim(std::string &s) {
+    int ws_ctr = 0;
+    for (char c : s)
+    {
+      if (c == ' ' || c == '\t')
+        ++ws_ctr;
+      else
+        break;
+    }
+
+    int reverse_ws_ctr = 0;
+    char c;
+    for (int i=s.size()-1; i >= 0; --i)
+    {
+      c = s[i];
+      if (c == ' ' || c == '\t')
+        ++reverse_ws_ctr;
+      else
+        break;
+    }
+
+    if (ws_ctr > 0 || reverse_ws_ctr > 0)
+      s = s.substr(ws_ctr, s.size() - (ws_ctr + reverse_ws_ctr));
+  }
+
+  inline static
+  std::string trim(std::string const& in)
+  {
+    std::string out(in);
+    utility::itrim(out);
+    return out;
+  }
+
 } // utility namespace
 } // hax namespace
 

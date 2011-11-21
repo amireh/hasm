@@ -1,4 +1,4 @@
-COPY    START    0
+COPY    START    0 . FOOBAR
 FIRST   STL      RETADR
 CLOOP   JSUB     RDREC
         LDA      LENGTH

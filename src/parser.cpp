@@ -168,13 +168,46 @@ namespace hax
     // __DEBUG__ : skip the START record
     //~ while (in.get() != '\n');;
 
-    while (!in.eof())
-    //~ for (int i=0; i < 4; ++i)
+    //~ while (!in.eof())
+    for (int i=0; i < 4; ++i)
     {
       string_t token = "";
       instruction* inst = new instruction();
       bool discard = false;
       string_t line = "";
+
+      // parse the line first
+      while (true)
+      {
+        char c = in.get();
+        if (c == '\n')
+          break;
+
+        line += c;
+      }
+
+      { // prepare the line for parsing
+
+        // trim whitespace
+        utility::itrim(line);
+
+        // is it a full comment? if so, discard this entry
+        if (line.front() == '.')
+          continue;
+
+        // remove any inline comments
+        size_t comment_idx = line.find('.');
+        if (comment_idx != std::string::npos) {
+          line = line.substr(0, comment_idx);
+          // re-trim in case there were spaces before the comment
+          utility::itrim(line);
+        }
+
+      }
+
+      std::cout << "Entry is now ready for parsing: " << line << "\n";
+
+      if (false) {
       while (true)
       {
         char c = in.get();
@@ -230,12 +263,13 @@ namespace hax
 
       instructions.push_back(inst);
       inst = 0;
+      }
     }
 
     // sometimes editors append an empty line to files for historical reasons,
     // so we remove that entry since the parser mistook it for an empty mnemonic
     // instruction
-    if (instructions.back()->nr_tokens() == 0)
+    if (instructions.size() > 0 && instructions.back()->nr_tokens() == 0)
     {
       delete instructions.back();
       instructions.pop_back();

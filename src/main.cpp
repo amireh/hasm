@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include "parser.hpp"
+#include "hax_utility.hpp"
 
 int main(int argc, char** argv)
 {
