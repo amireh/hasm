@@ -104,6 +104,16 @@ namespace hax
       assert(operand);
       parser::singleton().set_base(operand->address());
       std::cout << std::hex << std::setw(4) << std::setfill('0') << parser::singleton().base() << "\n";
+    } else if (mnemonic_ == "BYTE")
+    {
+      string_t &operand = operands_.front();
+
+      if (operand.find("C`") != std::string::npos)
+      {
+      } else if (operand.find("X`") != std::string::npos) {
+      } else {
+        throw invalid_operand("unrecognized token in BYTE operation: " + operand);
+      }
     }
   }
 

@@ -66,7 +66,6 @@ namespace hax
   void fmt2_instruction::calc_target_address()
   {
     symbol_manager &sym_mgr = symbol_manager::singleton();
-    int target_address = 0x00;
 
     assert(!operands_.empty());
 
@@ -91,23 +90,9 @@ namespace hax
     symbol_t *lhs = sym_mgr.lookup(operands_.front());
     symbol_t *rhs = sym_mgr.lookup(operands_.back());
 
-    using utility::stringify;
-
-    //string_t target_address_str = stringify(lhs->address()) + stringify(rhs->address());
-    std::ostringstream tastr;
-    tastr << lhs->address() << rhs->address();
-    objcode_ = (opcode_ << 8) | utility::convertTo<int>(tastr.str());
-    //~ objcode_ <<= 8;
-
-    if (VERBOSE)
-    std::cout
-      << "Format2 address = "
-      << std::hex << std::uppercase
-      << tastr.str() << "\n";
-
-    // discard the 5 highest-order half-bytes (for negative values calculated with 2's complement)
-    //int foo = (opcode_ << 24) | addr_mode_ | targeting_flags;
-    //objcode_ = utility::overwrite_bits<int>(disp, foo, 20, 12) | (0x1 << 20);
+    std::stringstream target_address;
+    target_address << std::hex << (int)opcode_ << lhs->address() << rhs->address();
+    target_address >> objcode_;
   }
 
   bool fmt2_instruction::is_valid() const

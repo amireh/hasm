@@ -54,6 +54,13 @@ namespace hax {
 		{ }
 	};
 
+	class invalid_operand : public std::runtime_error {
+	public:
+		inline invalid_operand(const std::string& s)
+		: std::runtime_error(s)
+		{ }
+	};
+
 	class undefined_symbol : public std::runtime_error {
 	public:
 		inline undefined_symbol(const std::string& s)

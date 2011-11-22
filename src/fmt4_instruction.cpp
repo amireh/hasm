@@ -71,7 +71,6 @@ namespace hax
     int disp = 0x0;
     //~ uint32_t objcode = 0x0;
     uint32_t targeting_flags = 0x0;
-    bool is_constant = false;
 
     assert(!operands_.empty());
 
@@ -106,7 +105,6 @@ namespace hax
         // it is an immediate constant
         // TA = constant - PC/B
         targeting_flags = 0x1 << 24; // immediate
-        is_constant = true;
         target_address = utility::convertTo<int>(operand_str);
       }
 
