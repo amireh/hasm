@@ -125,7 +125,7 @@ namespace hax
     register_op("BASE",  0x00, format::fmt_directive);
     register_op("*",      0x00, format::fmt_directive);
 
-    std::cout << "registered " << optable_.size() << " SIC/XE operations\n";
+    std::cout << "+- Registered " << optable_.size() << " SIC/XE operations & assembler directives.\n";
   }
 
   bool parser::is_op(string_t const& in_token) const
@@ -199,6 +199,10 @@ namespace hax
     // __DEBUG__ : skip the START record
     //~ while (in.get() != '\n');;
 
+    std::cout << "+- Pass1: \n";
+    std::cout << "+- \n";
+    std::cout << "+- Analyzing entries...\n";
+
     while (!in.eof())
     //~ for (int i=0; i < 4; ++i)
     {
@@ -261,6 +265,9 @@ namespace hax
       if (!token.empty())
         tokens.push_back(token);
 
+      if (tokens.empty())
+        continue;
+
       instruction* inst = 0;
       symbol_t* label = 0;
 
@@ -270,6 +277,13 @@ namespace hax
         label = symbol_manager::singleton().declare(tokens.front());
         tokens.pop_front();
       }
+
+      // validation check: was it only a label entry?
+      if (tokens.empty())
+        throw invalid_entry("missing opcode and operands in entry: " + line);
+
+      else if (!is_op(tokens.front()))
+        throw invalid_opcode("unrecognized operation: " + tokens.front());
 
       inst = instruction_factory::singleton().create(tokens.front());
       tokens.pop_front();
@@ -294,7 +308,9 @@ namespace hax
       inst = 0;
     }
 
-    std::cout << "\n-- calculating object code --\n";
+    std::cout << "\n+-\n";
+    std::cout << "+- Pass2\n";
+    std::cout << "+- Calculating object code...\n";
 
     for (auto inst : instructions_)
     {

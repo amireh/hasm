@@ -99,7 +99,7 @@ namespace hax
   {
     if (mnemonic_ == "BASE")
     {
-      std::cout << "-- assigned base register @ ";
+      //~ std::cout << "-- assigned base register @ ";
       symbol_t *operand = symbol_manager::singleton().lookup(operands_.front());
       assert(operand);
       parser::singleton().set_base(operand->address());

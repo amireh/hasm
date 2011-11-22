@@ -1,5 +1,6 @@
-COPY    START   0       . 0000
-FIRST   STL     RETADR  . 0000
-SECOND  STL     RETADR  . 0000
-RETADR  BYTE    1       . 0003
-        END     FIRST   . 0004
+COPY    START   0
+FIRST   STL     @WORD1
+SECOND  STL     @WORD2
+WORD1   RESW    5
+WORD2   RESW    2
+        END     FIRST

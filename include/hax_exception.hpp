@@ -33,6 +33,13 @@ namespace hax {
 		{ }
 	};
 
+	class invalid_entry : public std::runtime_error {
+	public:
+		inline invalid_entry(const std::string& s)
+		: std::runtime_error(s)
+		{ }
+	};
+
 	class invalid_format : public std::runtime_error {
 	public:
 		inline invalid_format(const std::string& s)

@@ -27,12 +27,43 @@ namespace hax {
   bool VERBOSE = false;
 }
 
+using hax::string_t;
+
+void print_usage()
+{
+  std::cout << "Usage: hasm INPUT [OUTFILE]\n";
+  std::cout << "Re-run with --help for a list of supported arguments\n";
+}
+
+std::map<string_t, string_t> commands_;
+
+void print_help()
+{
+  std::cout << "Usage: hasm INPUT [OUTFILE]\n";
+  std::cout
+    << "Hax Assembler: translates SIC/XE compatible assembly listings "
+    << "into loadable object programs.\n";
+
+  commands_.insert(std::make_pair("-v", "runs in verbose mode"));
+
+  std::cout << "Optional arguments:\n";
+  for (auto pair : commands_)
+    std::cout << "  " << pair.first << "\t\t\t" << pair.second << "\n";
+}
+
 int main(int argc, char** argv)
 {
   if (argc <= 1)
   {
-    std::cout << "usage: hasm input.hasm [outfile]\n";
+    print_usage();
     return 0;
+  }
+
+  string_t first_arg(argv[1]);
+  if (first_arg.find("help") != std::string::npos)
+  {
+    print_help();
+    return 1;
   }
 
   for (int i=2; i < argc; ++i)
@@ -48,6 +79,12 @@ int main(int argc, char** argv)
   std::string _out = "a.obj";
   if (argc > 2)
     _out = argv[2];
+
+  std::cout << "+- Hax Assembler engaged -+\n";
+  std::cout << "+-\tInput: " << _in << '\n';
+  std::cout << "+-\tOutput: " << _out << '\n';
+  std::cout << "+-\tRerun with --help for list of supported arguments\n";
+
 
   hax::parser& _parser = hax::parser::singleton();
   //try {

@@ -1,3 +1,7 @@
+. SOURCE:
+.   System Software, An Introduction to Systems Programming 3rd Ed. (L. L. Beck)
+.   Figure 2.12, Page 81
+
 COPY    START    0 . FOOBAR
 FIRST   STL      RETADR
 CLOOP   JSUB     RDREC
