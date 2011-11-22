@@ -43,6 +43,8 @@ namespace hax
 
 	instruction::~instruction()
 	{
+    label_ = 0;
+    operands_.clear();
 	}
 
   instruction::instruction(const instruction& src)

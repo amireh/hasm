@@ -78,6 +78,7 @@ namespace hax
     string_t &operand = operands_.front();
     switch(operand[0]) {
       case '#':
+      case '=':
         addr_mode_ = addressing_mode::immediate;
         break;
       case '@':
@@ -129,6 +130,7 @@ namespace hax
     //~ uint32_t objcode = 0x0;
     uint32_t targeting_flags = 0x0;
     bool is_constant = false;
+    bool is_literal = false;
 
     assert(!operands_.empty());
 
@@ -140,29 +142,56 @@ namespace hax
     // extract the target address
     if (addr_mode_ == addressing_mode::immediate || addr_mode_ == addressing_mode::indirect)
     {
-      // strip the leading '#' or '@'
-      operand_str = operand_str.substr(1, operand_str.size());
-      operand = sym_mgr.lookup(operand_str);
+      // TODO: handle literals
+      if (operand_str.find("=C'") != std::string::npos || operand_str.find("=X'") != std::string::npos)
+      {
+        bool is_ascii = operand_str[1] == 'C';
 
-      // if it's an immediate symbol:
-      // TA = symbol address - PC/B
-      if (operand)
-      {
-        target_address = operand->address();
-      } else
-      {
-        // it is an immediate constant
-        // TA = constant - PC/B
-        targeting_flags = 0x000000;
-        is_constant = true;
-        target_address = disp = utility::convertTo<int>(operand_str);
+        // strip =C''
+        operand_str = operand_str.substr(3, operand_str.size()-4);
+
+        std::stringstream hex_repr;
+        hex_repr << std::hex;
+        for (auto c : operand_str)
+        {
+          if (is_ascii)
+            hex_repr << (int)c;
+          else
+            hex_repr << c;
+        }
+
+        //hex_repr >> objcode_;
+        hex_repr >> objcode_;
+        //~ objcode_ = target_address;
+        is_literal = true;
+        objcode_width_ = operand_str.size();
+      } else { // is not a literal
+
+        // strip the leading '#' or '@'
+        operand_str = operand_str.substr(1, operand_str.size());
+        operand = sym_mgr.lookup(operand_str);
+
+        // if it's an immediate symbol:
+        // TA = symbol address - PC/B
+        if (operand)
+        {
+          target_address = operand->address();
+        } else
+        {
+          // it is an immediate constant
+          // TA = constant - PC/B
+          targeting_flags = 0x000000;
+          is_constant = true;
+          target_address = disp = utility::convertTo<int>(operand_str);
+        }
       }
-
     } else if (addr_mode_ == addressing_mode::simple) {
 
       // TA = operand address - PC/B
       operand = sym_mgr.lookup(operand_str);
-      assert(operand);
+      if (!operand)
+        throw undefined_symbol("symbol: " + operand_str + ", in line: " + line_);
+      //assert(operand);
 
       target_address = operand->address();
     } else {
@@ -170,7 +199,7 @@ namespace hax
     }
 
     // try calculating the displacement using PC, then base, then immediate addressing
-    if (!is_constant)
+    if (!(is_constant || is_literal))
     {
       if (pc_relative_viable(target_address))
       {
@@ -212,8 +241,11 @@ namespace hax
       targeting_flags = 0x0;
 
     // discard the 5 highest-order half-bytes (for negative values calculated with 2's complement)
-    int foo = (opcode_ << 16) | addr_mode_ | targeting_flags;
-    objcode_ = utility::overwrite_bits<int>(disp, foo, 12, 20);
+    if (!is_literal)
+    {
+      int foo = (opcode_ << 16) | addr_mode_ | targeting_flags;
+      objcode_ = utility::overwrite_bits<int>(disp, foo, 12, 20);
+    }
   }
 
   bool fmt3_instruction::is_valid() const

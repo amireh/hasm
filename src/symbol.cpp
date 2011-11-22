@@ -77,6 +77,7 @@ namespace hax
       throw symbol_redifinition(std::string("attempting to re-define symbol ") + this->dump());
 
     address_ = in_addr;
+    is_resolved_ = true;
   }
 
   string_t const& symbol::label() const

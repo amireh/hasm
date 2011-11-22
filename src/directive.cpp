@@ -111,8 +111,7 @@ namespace hax
       if (operand.find("C`") != std::string::npos)
       {
         // strip C``
-        operand = operand.substr(2, operand.size());
-        operand = operand.substr(0, operand.size()-1);
+        operand = operand.substr(2, operand.size()-3);
 
         std::stringstream hex_repr;
         hex_repr << std::hex;

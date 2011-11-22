@@ -29,6 +29,7 @@
 
 namespace hax
 {
+  extern bool VERBOSE;
 
 	parser* parser::__instance = 0;
 
@@ -291,6 +292,7 @@ namespace hax
       if (label)
         inst->assign_label(label);
 
+
       // assign label & operands
       for (auto _token : tokens)
       {
@@ -309,6 +311,8 @@ namespace hax
     }
 
     std::cout << "\n+-\n";
+    if (VERBOSE)
+      symbol_manager::singleton().dump(std::cout);
     std::cout << "+- Pass2\n";
     std::cout << "+- Calculating object code...\n";
 

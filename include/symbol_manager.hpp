@@ -61,6 +61,8 @@ namespace hax
      **/
     bool is_defined(string_t const& in_name) const;
 
+    void dump(std::ostream& out) const;
+
     protected:
     typedef std::map<string_t, symbol_t*> symbols_t;
 

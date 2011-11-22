@@ -49,10 +49,10 @@ INPUT   BYTE    X`F1`
         USE
 WRREC   CLEAR   X
         LDT     LENGTH
-WLOOP   TD      =X`05`
+WLOOP   TD      =X'05'
         JEQ     WLOOP
         LDCH    BUFFER,X
-        WD      =X`05`
+        WD      =X'05'
         TIXR    T
         JLT     WLOOP
         RSUB

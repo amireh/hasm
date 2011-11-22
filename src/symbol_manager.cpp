@@ -106,4 +106,19 @@ namespace hax
 
     return sym->is_resolved();
   }
+
+  void symbol_manager::dump(std::ostream& out) const
+  {
+    out << "+- Listing " << symbols_.size() << " symbols:\n";
+    int i=0;
+    for (auto entry : symbols_)
+    {
+      symbol_t *symbol = entry.second;
+      out << std::uppercase
+      << "  " << ++i << ". "
+      << symbol->label() << "\t"
+      << (symbol->is_resolved() ? "TRUE" : "FALSE") << "\t"
+      << std::hex << symbol->address() << "\n";
+    }
+  }
 } // end of namespace
