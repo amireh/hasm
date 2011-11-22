@@ -41,8 +41,6 @@ int main(int argc, char** argv)
       hax::VERBOSE = true;
   }
 
-  //~ std::cout << std::hex << 0x33 - 0x0D << "\n"; return 1;
-
   // input hasm file
   std::string _in = argv[1];
 

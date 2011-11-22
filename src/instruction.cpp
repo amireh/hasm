@@ -115,7 +115,7 @@ namespace hax
   std::ostream& instruction::to_stream(std::ostream& out) const
   {
     out << std::uppercase;
-    out << "0x" << std::hex << std::setw(4) << std::setfill('0') << (int)location_;
+    out << std::hex << std::setw(4) << std::setfill('0') << (int)location_;
     out << "\t";
 
     if (label_)
@@ -126,8 +126,12 @@ namespace hax
 
     out << "\t";
     out << mnemonic_;
-    out << "\t(0x" << std::hex << std::setw(2) << std::setfill('0') << (int)opcode_;
-    out << ")\t";
+    if (format_ != format::fmt_directive)
+      out << "\t(0x" << std::hex << std::setw(2) << std::setfill('0') << (int)opcode_ << ")";
+    else
+      out << "\t";
+
+    out << "\t";
 
     for (auto token : operands_) out << " " << token;
 

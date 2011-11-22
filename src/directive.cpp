@@ -106,11 +106,34 @@ namespace hax
       std::cout << std::hex << std::setw(4) << std::setfill('0') << parser::singleton().base() << "\n";
     } else if (mnemonic_ == "BYTE")
     {
-      string_t &operand = operands_.front();
+      string_t operand = operands_.front();
 
       if (operand.find("C`") != std::string::npos)
       {
+        // strip C``
+        operand = operand.substr(2, operand.size());
+        operand = operand.substr(0, operand.size()-1);
+
+        std::stringstream hex_repr;
+        hex_repr << std::hex;
+        for (auto c : operand)
+          hex_repr << (int)c;
+
+        hex_repr >> objcode_;
+        objcode_width_ = operand.size();
+
       } else if (operand.find("X`") != std::string::npos) {
+        // strip C``
+        operand = operand.substr(2, operand.size());
+        operand = operand.substr(0, operand.size()-1);
+
+        std::stringstream hex_repr;
+        hex_repr << std::hex;
+        for (auto c : operand)
+          hex_repr << c;
+
+        hex_repr >> objcode_;
+        objcode_width_ = operand.size();
       } else {
         throw invalid_operand("unrecognized token in BYTE operation: " + operand);
       }
