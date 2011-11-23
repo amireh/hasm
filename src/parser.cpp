@@ -22,6 +22,7 @@
 #include "instruction.hpp"
 #include "symbol_manager.hpp"
 #include "instruction_factory.hpp"
+#include "serializer.hpp"
 #include <fstream>
 #include <ostream>
 #include <exception>
@@ -191,12 +192,6 @@ namespace hax
       throw std::runtime_error("can not open input file: " + in_path);
     }
 
-    std::ofstream out(out_path);
-    if (!out.is_open() || !out.good())
-    {
-      throw std::runtime_error("can not open output file: " + out_path);
-    }
-
     // __DEBUG__ : skip the START record
     //~ while (in.get() != '\n');;
 
@@ -323,8 +318,9 @@ namespace hax
       std::cout << inst << "\n";
     }
 
+    serializer::singleton().process(out_path);
+
     in.close();
-    out.close();
   }
 
   loc_t parser::base() const
@@ -334,5 +330,15 @@ namespace hax
   void parser::set_base(loc_t in_loc)
   {
     base_ = in_loc;
+  }
+
+  parser::instructions_t const& parser::instructions() const
+  {
+    return instructions_;
+  }
+
+  loc_t parser::locctr() const
+  {
+    return locctr_;
   }
 } // end of namespace

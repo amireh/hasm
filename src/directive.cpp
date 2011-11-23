@@ -83,11 +83,14 @@ namespace hax
       length_ = 3;
     } else if (mnemonic_ == "RESB")
     {
+      assemblable_ = false;
       length_ = 1 * utility::convertTo<int>(operands_.front());
     } else if (mnemonic_ == "RESW")
     {
+      assemblable_ = false;
       length_ = 3 * utility::convertTo<int>(operands_.front());
-    }
+    } else if (mnemonic_ == "BASE")
+      assemblable_ = false;
   }
 
   loc_t directive::length() const
@@ -136,6 +139,20 @@ namespace hax
       } else {
         throw invalid_operand("unrecognized token in BYTE operation: " + operand);
       }
+    } else if (mnemonic_ == "END")
+    {
+        string_t operand_str = "";
+        if (!operands_.empty())
+          operand_str = operands_.front();
+        else
+          operand_str = "0";
+
+        symbol_t *operand = symbol_manager::singleton().lookup(operand_str);
+        if (!operand)
+          throw undefined_symbol("in END instruction: " + operand_str);
+
+        objcode_ = operand->address();
+
     }
   }
 

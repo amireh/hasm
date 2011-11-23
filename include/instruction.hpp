@@ -112,6 +112,12 @@ namespace hax
 
     virtual string_t dump() const;
 
+    uint32_t objcode() const;
+
+    bool is_assemblable() const;
+    bool is_relocatable() const;
+    string_t const& mnemonic() const;
+
     protected:
     typedef std::vector<string_t> operands_t;
 
@@ -143,6 +149,11 @@ namespace hax
     bool indexed_;
     string_t mnemonic_;
     uint8_t objcode_width_;
+    bool relocatable_;
+
+    // some assembler directives like RESB and RESW do not construct object code
+    // this flag is set to false in such instructions
+    bool assemblable_;
 
     private:
 	};

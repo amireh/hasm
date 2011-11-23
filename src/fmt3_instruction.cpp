@@ -169,7 +169,9 @@ namespace hax
 
         // strip the leading '#' or '@'
         operand_str = operand_str.substr(1, operand_str.size());
-        operand = sym_mgr.lookup(operand_str);
+        // TODO: check for edge cases when the immediate operand is a number (like #0)
+        if (operand_str.front() != '0')
+          operand = sym_mgr.lookup(operand_str);
 
         // if it's an immediate symbol:
         // TA = symbol address - PC/B

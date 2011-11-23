@@ -30,10 +30,12 @@
 namespace hax
 {
   class symbol;
+  class serializer;
   class parser {
     public:
 
     typedef instruction inst_t;
+    typedef std::list<inst_t*> instructions_t;
 
     static parser* singleton_ptr();
     static parser& singleton();
@@ -55,9 +57,17 @@ namespace hax
     loc_t base() const;
     void set_base(loc_t in_loc);
 
+    instructions_t const& instructions() const;
+
     protected:
+    friend class serializer;
+    loc_t locctr() const;
+
+
+    private:
+    static parser *__instance;
+
     typedef std::map<string_t, std::tuple<int, char> > optable_t;
-    typedef std::list<inst_t*> instructions_t;
 
     bool is_delimiter(char);
     void populate_optable();
@@ -69,10 +79,6 @@ namespace hax
     optable_t optable_;
     instructions_t instructions_;
     loc_t base_;
-
-    private:
-    static parser *__instance;
-
 
 		parser();
     parser(const parser& src);

@@ -87,6 +87,8 @@ namespace hax
     }
 
     symbol_t *operand = 0;
+    // all extended format operations require relocation except constant-operanded ones
+    relocatable_ = true;
 
     // extract the target address
     if (addr_mode_ == addressing_mode::immediate)
@@ -106,6 +108,7 @@ namespace hax
         // TA = constant - PC/B
         targeting_flags = 0x1 << 24; // immediate
         target_address = utility::convertTo<int>(operand_str);
+        relocatable_ = false;
       }
 
     } else if (addr_mode_ == addressing_mode::simple) {

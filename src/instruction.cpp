@@ -37,7 +37,9 @@ namespace hax
     objcode_(0x000000),
     indexed_(false),
     mnemonic_(in_mnemonic),
-    objcode_width_(6)
+    objcode_width_(6),
+    relocatable_(false),
+    assemblable_(true)
   {
 	}
 
@@ -322,5 +324,30 @@ namespace hax
   void instruction::assign_line(string_t const& in_entry)
   {
     line_ = in_entry;
+  }
+
+  symbol_t const* const instruction::label() const
+  {
+    return label_;
+  }
+
+  uint32_t instruction::objcode() const
+  {
+    return objcode_;
+  }
+
+  bool instruction::is_assemblable() const
+  {
+    return assemblable_;
+  }
+
+  bool instruction::is_relocatable() const
+  {
+    return relocatable_;
+  }
+
+  string_t const& instruction::mnemonic() const
+  {
+    return mnemonic_;
   }
 } // end of namespace

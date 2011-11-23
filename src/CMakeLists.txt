@@ -1,6 +1,7 @@
 # add sources
 SET(SRCS
     parser.cpp
+    serializer.cpp
     symbol.cpp
     symbol_manager.cpp
     instruction.cpp
