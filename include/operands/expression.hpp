@@ -22,24 +22,39 @@
 #define h_expression_h
 
 #include "hax.hpp"
-#include "loggable.hpp"
-#include <vector>
+#include "operand.hpp"
+#include <map>
 
 namespace hax
 {
-  class expression : public loggable {
+  class expression : public operand {
     public:
+    typedef std::map<char, int> weights_t;
+    static weights_t operator_weights;
 
-    typedef addressing_mode addressing_mode_t;
-
-    expression() = delete;
-		explicit expression(opcode_t, const string_t&);
+		explicit expression(string_t const& in_token);
+    expression()=delete;
     expression(const expression& src);
 		expression& operator=(const expression& rhs);
 		virtual ~expression();
 
+    virtual void evaluate();
+
+    /**
+     * if the expression contains any references to symbols, then it is not
+     * a constant one
+     **/
+    virtual bool is_absolute() const;
+
     protected:
-    private:
+    void copy_from(const expression&);
+    int evaluate_postfix(string_t in_expr/*, std::vector<string_t> in_operands*/);
+    string_t to_postfix(string_t const& in);
+    bool has_precedence(char op1, char op2);
+    int apply_operator(char op, int lhs, int rhs);
+
+    bool absolute_;
+
 	};
 
   typedef expression expression_t;

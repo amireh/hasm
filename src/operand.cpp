@@ -25,10 +25,9 @@ namespace hax
 {
   using utility::stringify;
 
-	operand::operand(string_t const& in_token, instruction_t const* in_inst)
+	operand::operand(string_t const& in_token)
   : token_(in_token),
     value_(0x0),
-    inst_(in_inst),
     type_(t_undefined),
     length_(0x0),
     evaluated_(false)
@@ -38,7 +37,6 @@ namespace hax
 
 	operand::~operand()
 	{
-    inst_ = 0;
 	}
 
   operand::operand(const operand& src)
@@ -58,7 +56,6 @@ namespace hax
   {
     this->token_ = src.token_;
     this->value_ = src.value_;
-    this->inst_ = src.inst_;
     this->type_ = src.type_;
     this->length_ = src.length_;
     this->evaluated_ = src.evaluated_;
@@ -78,11 +75,6 @@ namespace hax
     return token_;
   }
 
-  instruction_t const* operand::inst() const
-  {
-    return inst_;
-  }
-
   uint32_t operand::value() const
   {
     if (!evaluated_)
@@ -94,11 +86,6 @@ namespace hax
   bool operand::is_evaluated() const
   {
     return evaluated_;
-  }
-
-  void operand::_assign_instruction(instruction_t const* in_inst)
-  {
-    inst_ = in_inst;
   }
 
   void operand::_assign_value(uint32_t in_val)
@@ -113,6 +100,10 @@ namespace hax
 
   bool operand::is_constant() const {
     return type_ == t_constant;
+  }
+
+  bool operand::is_expression() const {
+    return type_ == t_expression;
   }
 
   uint16_t operand::length() const

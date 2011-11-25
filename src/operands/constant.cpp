@@ -24,8 +24,8 @@ namespace hax
 {
   using utility::stringify;
 
-	constant::constant(string_t const& in_token, instruction_t const* in_inst)
-  : operand(in_token, in_inst)
+	constant::constant(string_t const& in_token)
+  : operand(in_token)
   {
     type_ = t_constant;
 
@@ -51,7 +51,7 @@ namespace hax
     handler_ = 0;
 	}
 
-  constant::constant(const constant& src) : operand(src.token_, src.inst_)
+  constant::constant(const constant& src) : operand(src.token_)
   {
     copy_from(src);
   }

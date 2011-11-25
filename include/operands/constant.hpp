@@ -29,7 +29,7 @@ namespace hax
   class constant : public operand {
     public:
 
-		explicit constant(string_t const& in_token, instruction_t const* in_inst);
+		explicit constant(string_t const& in_token);
     constant()=delete;
     constant(const constant& src);
 		constant& operator=(const constant& rhs);

@@ -29,7 +29,7 @@ namespace hax
   class symbol : public operand {
     public:
 
-		explicit symbol(string_t const& in_label, instruction_t const* in_inst);
+		explicit symbol(string_t const& in_label);
     symbol()=delete;
     symbol(const symbol& src);
 		symbol& operator=(const symbol& rhs);

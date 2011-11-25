@@ -26,23 +26,16 @@
 
 namespace hax
 {
-  class instruction;
-  typedef instruction instruction_t;
-
   class operand : public loggable {
     public:
 
-		explicit operand(string_t const& in_token, instruction_t const* in_inst=0);
+		explicit operand(string_t const& in_token);
     operand()=delete;
     operand(const operand& src);
 		operand& operator=(const operand& rhs);
 		virtual ~operand();
 
-    instruction_t const* inst() const;
-
     virtual void evaluate()=0;
-
-    virtual void _assign_instruction(instruction_t const*);
     virtual void _assign_value(uint32_t);
 
     virtual uint32_t value() const;
@@ -68,7 +61,6 @@ namespace hax
 
     string_t token_;
     uint32_t value_;
-    instruction_t const* inst_;
     char type_;
     uint16_t length_;
 
