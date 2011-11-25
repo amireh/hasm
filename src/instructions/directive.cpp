@@ -109,6 +109,7 @@ namespace hax
     {
       // BYTE constant values have already been evaluated in preprocess()
       objcode_ = operand_->value();
+      objcode_width_ = operand_->length() * 2;
     } else if (mnemonic_ == "END")
     {
         string_t operand_str = "";

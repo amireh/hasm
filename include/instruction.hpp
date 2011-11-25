@@ -123,6 +123,12 @@ namespace hax
     typedef std::vector<string_t> operands_t;
 
     virtual void copy_from(const instruction&);
+
+    bool __is_constant(string_t const& token);
+    bool __is_literal(string_t const& token);
+    bool __is_symbol(string_t const& token);
+    bool __is_expression(string_t const& token);
+
     virtual std::ostream& to_stream(std::ostream&) const;
 
     /**

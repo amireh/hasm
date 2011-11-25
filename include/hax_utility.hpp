@@ -131,6 +131,27 @@ namespace hax { namespace utility {
     return true;
   }
 
+  inline static
+  bool is_operator(char c)
+  {
+    switch (c)
+    {
+      case '(':
+      case ')':
+      case '+':
+      case '-':
+      case '*':
+      case '/':
+      case '%':
+      case '^':
+      return true;
+      default:
+      return false;
+    }
+
+    return false;
+  }
+
   template<typename IntType>
   IntType overwrite_bits(IntType dst, IntType src, int pos, int len) {
       IntType mask = (((IntType)1 << len) - 1) << pos;

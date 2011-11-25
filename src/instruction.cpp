@@ -129,20 +129,15 @@ namespace hax
       operand_str = operand_str.substr(1, operand_str.size()-1);
 
     // a constant
-    if (operand_str.find("=C'") != std::string::npos
-    || operand_str.find("=X'") != std::string::npos
-    || utility::is_decimal_nr(operand_str))
-    {
+    if (__is_constant(operand_str)) {
       operand_ = new constant(in_token, this);
-    } else// if (symbol_manager::singleton().lookup(operand_str))
-    {
-      //~ operand_ = new symbol(in_token, this);
+    } else if (__is_expression(operand_str)) {
+      // TODO: implement expression support
+    } else {
+      // we do not own symbol objects, so we grab a reference and release it
+      // when we're destructed
       operand_ = symbol_manager::singleton().declare(operand_str);
-    } /*else
-    {
-      // TODO: expressions
-      //operand_ = new expression(in_token, this);
-    }*/
+    }
   }
 
   loc_t instruction::location() const
@@ -244,4 +239,34 @@ namespace hax
   {
     return mnemonic_;
   }
+
+  bool instruction::__is_constant(string_t const& token)
+  {
+    return token.find("=C'") != std::string::npos
+        || token.find("=X'") != std::string::npos
+        || utility::is_decimal_nr(token);
+  }
+
+  bool instruction::__is_literal(string_t const& token)
+  {
+    return false;
+  }
+
+  bool instruction::__is_symbol(string_t const& token)
+  {
+    return symbol_manager::singleton().lookup(token) != 0;
+  }
+
+  bool instruction::__is_expression(string_t const& token)
+  {
+    // although we can use C++ TR1 regex here for a more robust solution,
+    // for simplicity, I choose to stupidly scan the token for any operators
+    // as they are only allowed within expressions
+    for (auto c : token)
+      if (utility::is_operator(c))
+        return true;
+
+    return false;
+  }
+
 } // end of namespace
