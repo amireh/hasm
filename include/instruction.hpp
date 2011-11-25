@@ -23,6 +23,7 @@
 
 #include "hax.hpp"
 #include "loggable.hpp"
+#include "operand.hpp"
 #include <vector>
 
 namespace hax
@@ -67,7 +68,7 @@ namespace hax
      **/
     virtual loc_t length() const=0;
 
-    virtual void calc_target_address()=0;
+    virtual void assemble()=0;
 
     /**
      * an instruction is valid when:
@@ -88,7 +89,7 @@ namespace hax
     //void register_token(string_t const&);
     void assign_location(loc_t);
     void assign_label(symbol_t* const);
-    void assign_operand(string_t const&);
+    virtual void assign_operand(string_t const&);
 
     void resolve_references();
 
@@ -139,7 +140,9 @@ namespace hax
 
     symbol_t* label_;
 
-    operands_t operands_;
+    //~ operands_t operands_;
+    operand_t *operand_;
+    string_t operand_str_;
 
     format_t format_;
 

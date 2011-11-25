@@ -18,30 +18,53 @@
  *  along with HASM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef h_fmt2_instruction_h
-#define h_fmt2_instruction_h
-
-#include "instruction.hpp"
+#include "fmt1_instruction.hpp"
 
 namespace hax
 {
-  class fmt2_instruction : public instruction {
-    public:
+  using utility::stringify;
 
-    fmt2_instruction() = delete;
-		explicit fmt2_instruction(opcode_t, const string_t&);
-    fmt2_instruction(const fmt2_instruction& src);
-		fmt2_instruction& operator=(const fmt2_instruction& rhs);
-		virtual ~fmt2_instruction();
+	fmt1_instruction::fmt1_instruction(opcode_t in_opcode, string_t const& in_mnemonic)
+  : instruction(in_opcode, in_mnemonic)
+  {
+    format_ = format::fmt_one;
+	}
 
-    virtual loc_t length() const;
-    virtual void calc_target_address();
-    virtual bool is_valid() const;
+	fmt1_instruction::~fmt1_instruction()
+	{
+	}
 
-    protected:
-    void copy_from(const fmt2_instruction&);
+  fmt1_instruction::fmt1_instruction(const fmt1_instruction& src)
+  : instruction(src)
+  {
+    copy_from(src);
+  }
 
-    private:
-	};
+  fmt1_instruction& fmt1_instruction::operator=(const fmt1_instruction& rhs)
+  {
+    if (this != &rhs)
+      copy_from(rhs);
+
+    return *this;
+  }
+
+  void fmt1_instruction::copy_from(const fmt1_instruction& src)
+  {
+    instruction::copy_from(src);
+  }
+
+  loc_t fmt1_instruction::length() const
+  {
+    return 1;
+  }
+
+  void fmt1_instruction::assemble()
+  {
+  }
+
+  bool fmt1_instruction::is_valid() const
+  {
+    return true;
+  }
+
 } // end of namespace
-#endif // h_fmt2_instruction_h

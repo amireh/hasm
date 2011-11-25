@@ -18,24 +18,30 @@
  *  along with HASM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef h_hax_h
-#define h_hax_h
+#ifndef h_expression_h
+#define h_expression_h
 
-#include <string>
-#include <tuple>
-#include <iomanip>
-#include <cassert>
+#include "hax.hpp"
+#include "loggable.hpp"
+#include <vector>
 
-#include "hax_exception.hpp"
-#include "hax_utility.hpp"
+namespace hax
+{
+  class expression : public loggable {
+    public:
 
-namespace hax {
+    typedef addressing_mode addressing_mode_t;
 
-  typedef uint8_t opcode_t;
-  typedef uint16_t loc_t;
-  typedef std::string string_t;
-  typedef char format_t;
-  typedef std::tuple<opcode_t, format_t> opcode_fmt_t;
+    expression() = delete;
+		explicit expression(opcode_t, const string_t&);
+    expression(const expression& src);
+		expression& operator=(const expression& rhs);
+		virtual ~expression();
 
-}
-#endif
+    protected:
+    private:
+	};
+
+  typedef expression expression_t;
+} // end of namespace
+#endif // h_expression_h

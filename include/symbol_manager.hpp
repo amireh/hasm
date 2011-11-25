@@ -22,7 +22,7 @@
 #define h_symbol_manager_h
 
 #include "hax.hpp"
-#include "symbol.hpp"
+#include "operands/symbol.hpp"
 #include <map>
 
 namespace hax

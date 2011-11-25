@@ -68,9 +68,23 @@ namespace hax {
 		{ }
 	};
 
+	class invalid_expression : public std::runtime_error {
+	public:
+		inline invalid_expression(const std::string& s)
+		: std::runtime_error(s)
+		{ }
+	};
+
 	class undefined_symbol : public std::runtime_error {
 	public:
 		inline undefined_symbol(const std::string& s)
+		: std::runtime_error(s)
+		{ }
+	};
+
+	class unevaluated_operand : public std::runtime_error {
+	public:
+		inline unevaluated_operand(const std::string& s)
 		: std::runtime_error(s)
 		{ }
 	};

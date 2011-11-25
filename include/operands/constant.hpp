@@ -18,30 +18,37 @@
  *  along with HASM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef h_fmt1_instruction_h
-#define h_fmt1_instruction_h
+#ifndef h_constant_h
+#define h_constant_h
 
-#include "instruction.hpp"
+#include "hax.hpp"
+#include "operand.hpp"
 
 namespace hax
 {
-  class fmt1_instruction : public instruction {
+  class constant : public operand {
     public:
 
-    fmt1_instruction() = delete;
-		explicit fmt1_instruction(opcode_t, const string_t&);
-    fmt1_instruction(const fmt1_instruction& src);
-		fmt1_instruction& operator=(const fmt1_instruction& rhs);
-		virtual ~fmt1_instruction();
+		explicit constant(string_t const& in_token, instruction_t const* in_inst);
+    constant()=delete;
+    constant(const constant& src);
+		constant& operator=(const constant& rhs);
+		virtual ~constant();
 
-    virtual loc_t length() const;
-    virtual void calc_target_address();
-    virtual bool is_valid() const;
+    virtual void evaluate();
 
     protected:
-    void copy_from(const fmt1_instruction&);
+    void (constant::*handler_)();
 
-    private:
+    void handle_ascii_literal();
+    void handle_hex_literal();
+    void handle_literal(bool is_ascii);
+
+    void handle_constant();
+
+    void copy_from(const constant&);
 	};
+
+  typedef constant constant_t;
 } // end of namespace
-#endif // h_fmt1_instruction_h
+#endif // h_constant_h

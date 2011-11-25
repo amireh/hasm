@@ -74,15 +74,20 @@ namespace hax
 
     std::cout << "+- Serializer: writing object program\n";
     parser::instructions_t const& instructions = parser::singleton().instructions();
+    if (instructions.empty())
+    {
+      std::cerr << "FATAL: no instructions parsed to serialize! aborting\n";
+      return;
+    }
+
     std::vector<t_record*> t_records;
     std::vector<m_record*> m_records;
 
     instruction_t const* inst = 0;
 
-
     // TODO: write HEADER record
     inst = instructions.front();
-    std::string prog_name = inst->label()->label();
+    std::string prog_name = inst->label()->token();
     if (prog_name.size() > 7)
       throw std::runtime_error("program name is too long");
 

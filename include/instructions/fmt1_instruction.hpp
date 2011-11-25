@@ -18,33 +18,30 @@
  *  along with HASM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef h_directive_h
-#define h_directive_h
+#ifndef h_fmt1_instruction_h
+#define h_fmt1_instruction_h
 
 #include "instruction.hpp"
 
 namespace hax
 {
-  class directive : public instruction {
+  class fmt1_instruction : public instruction {
     public:
 
-    directive() = delete;
-		explicit directive(opcode_t, string_t const& in_mnemonic);
-    directive(const directive& src);
-		directive& operator=(const directive& rhs);
-		virtual ~directive();
+    fmt1_instruction() = delete;
+		explicit fmt1_instruction(opcode_t, const string_t&);
+    fmt1_instruction(const fmt1_instruction& src);
+		fmt1_instruction& operator=(const fmt1_instruction& rhs);
+		virtual ~fmt1_instruction();
 
     virtual loc_t length() const;
-    virtual void calc_target_address();
+    virtual void assemble();
     virtual bool is_valid() const;
-    virtual void preprocess();
 
     protected:
-    void copy_from(const directive&);
-
-    string_t op_;
+    void copy_from(const fmt1_instruction&);
 
     private:
 	};
 } // end of namespace
-#endif // h_directive_h
+#endif // h_fmt1_instruction_h

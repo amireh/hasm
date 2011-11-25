@@ -24,7 +24,6 @@
 #include "symbol_manager.hpp"
 #include <cassert>
 
-
 namespace hax
 {
   using utility::stringify;
@@ -64,18 +63,11 @@ namespace hax
     return 4;
   }
 
-  void fmt4_instruction::calc_target_address()
+  void fmt4_instruction::assign_operand(string_t const& in_operand)
   {
-    symbol_manager &sym_mgr = symbol_manager::singleton();
-    int target_address = 0x000;
-    int disp = 0x0;
-    //~ uint32_t objcode = 0x0;
-    uint32_t targeting_flags = 0x0;
+    instruction::assign_operand(in_operand);
 
-    assert(!operands_.empty());
-
-    string_t &operand_str = operands_.front();
-    switch(operand_str[0]) {
+    switch(in_operand[0]) {
       case '#':
         addr_mode_ = addressing_mode::immediate;
         break;
@@ -85,46 +77,36 @@ namespace hax
       default:
         addr_mode_ = addressing_mode::simple;
     }
+  }
 
-    symbol_t *operand = 0;
+  void fmt4_instruction::assemble()
+  {
+    int target_address = 0x0;
+    int disp = 0x0;
+    uint32_t targeting_flags = 0x0;
+
+    assert(operand_);
+
     // all extended format operations require relocation except constant-operanded ones
     relocatable_ = true;
 
     // extract the target address
+    operand_->evaluate();
+    disp = target_address = operand_->value();
+
+    // assign addressing flags
     if (addr_mode_ == addressing_mode::immediate)
     {
-      // strip the leading '#' or '@'
-      operand_str = operand_str.substr(1, operand_str.size());
-      operand = sym_mgr.lookup(operand_str);
-
-      // if it's an immediate symbol:
-      // TA = symbol address - PC/B
-      if (operand)
-      {
-        target_address = operand->address();
-      } else
-      {
-        // it is an immediate constant
-        // TA = constant - PC/B
-        targeting_flags = 0x1 << 24; // immediate
-        target_address = utility::convertTo<int>(operand_str);
+      // if it's an immediate operand
+      if (operand_->is_constant()) {
+        targeting_flags = 0x1 << 24;
         relocatable_ = false;
       }
-
     } else if (addr_mode_ == addressing_mode::simple) {
-
-      // TA = operand address - PC/B
-      operand = sym_mgr.lookup(operand_str);
-      assert(operand);
-
-      target_address = operand->address();
       targeting_flags = 0x3 << 24; // neither indirect nor immediate
     } else {
       throw invalid_addressing_mode(this->line_);
     }
-
-    disp = target_address;
-    //~ targeting_flags |= 0x000001;
 
     if (VERBOSE)
     std::cout
@@ -133,8 +115,8 @@ namespace hax
       << target_address << "\n";
 
     // discard the 5 highest-order half-bytes (for negative values calculated with 2's complement)
-    int foo = (opcode_ << 24) | addr_mode_ | targeting_flags;
-    objcode_ = utility::overwrite_bits<int>(disp, foo, 20, 12) | (0x1 << 20);
+    objcode_ = (opcode_ << 24) | addr_mode_ | targeting_flags;
+    objcode_ = utility::overwrite_bits<int>(disp, objcode_, 20, 12) | (0x1 << 20);
   }
 
   bool fmt4_instruction::is_valid() const

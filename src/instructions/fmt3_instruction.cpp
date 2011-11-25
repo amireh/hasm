@@ -32,6 +32,7 @@ namespace hax
   : instruction(in_opcode, in_mnemonic)
   {
     format_ = format::fmt_three;
+    addr_mode_ = addressing_mode::simple;
 	}
 
 	fmt3_instruction::~fmt3_instruction()
@@ -63,9 +64,11 @@ namespace hax
 
     if (mnemonic_ == "RSUB")
     {
-      if (operands_.empty())
-        operands_.push_back("0");
+      //if (operands_.empty())
+      //  operands_.push_back("0");
+      assign_operand("0");
     }
+
   }
 
   loc_t fmt3_instruction::length() const
@@ -73,10 +76,11 @@ namespace hax
     return length_;
   }
 
-  void fmt3_instruction::find_addressing_mode()
+  void fmt3_instruction::assign_operand(string_t const& in_operand)
   {
-    string_t &operand = operands_.front();
-    switch(operand[0]) {
+    instruction::assign_operand(in_operand);
+
+    switch(in_operand[0]) {
       case '#':
       case '=':
         addr_mode_ = addressing_mode::immediate;
@@ -87,7 +91,6 @@ namespace hax
       default:
         addr_mode_ = addressing_mode::simple;
     }
-
   }
 
   bool fmt3_instruction::pc_relative_viable(int& address) const
@@ -122,86 +125,17 @@ namespace hax
     return !(address < lower_bound || address > upper_bound);
   }
 
-  void fmt3_instruction::calc_target_address()
+  void fmt3_instruction::assemble()
   {
-    symbol_manager &sym_mgr = symbol_manager::singleton();
-    int target_address = 0x000;
+    int target_address = 0x0;
     int disp = 0x0;
-    //~ uint32_t objcode = 0x0;
-    uint32_t targeting_flags = 0x0;
-    bool is_constant = false;
-    bool is_literal = false;
+    uint16_t targeting_flags = 0x0;
 
-    assert(!operands_.empty());
-
-    find_addressing_mode();
-
-    string_t &operand_str = operands_.front();
-    symbol_t *operand = 0;
-
-    // extract the target address
-    if (addr_mode_ == addressing_mode::immediate || addr_mode_ == addressing_mode::indirect)
-    {
-      // TODO: handle literals
-      if (operand_str.find("=C'") != std::string::npos || operand_str.find("=X'") != std::string::npos)
-      {
-        bool is_ascii = operand_str[1] == 'C';
-
-        // strip =C''
-        operand_str = operand_str.substr(3, operand_str.size()-4);
-
-        std::stringstream hex_repr;
-        hex_repr << std::hex;
-        for (auto c : operand_str)
-        {
-          if (is_ascii)
-            hex_repr << (int)c;
-          else
-            hex_repr << c;
-        }
-
-        //hex_repr >> objcode_;
-        hex_repr >> objcode_;
-        //~ objcode_ = target_address;
-        is_literal = true;
-        objcode_width_ = operand_str.size();
-      } else { // is not a literal
-
-        // strip the leading '#' or '@'
-        operand_str = operand_str.substr(1, operand_str.size());
-        // TODO: check for edge cases when the immediate operand is a number (like #0)
-        if (operand_str.front() != '0')
-          operand = sym_mgr.lookup(operand_str);
-
-        // if it's an immediate symbol:
-        // TA = symbol address - PC/B
-        if (operand)
-        {
-          target_address = operand->address();
-        } else
-        {
-          // it is an immediate constant
-          // TA = constant - PC/B
-          targeting_flags = 0x000000;
-          is_constant = true;
-          target_address = disp = utility::convertTo<int>(operand_str);
-        }
-      }
-    } else if (addr_mode_ == addressing_mode::simple) {
-
-      // TA = operand address - PC/B
-      operand = sym_mgr.lookup(operand_str);
-      if (!operand)
-        throw undefined_symbol("symbol: " + operand_str + ", in line: " + line_);
-      //assert(operand);
-
-      target_address = operand->address();
-    } else {
-      throw invalid_addressing_mode(this->line_);
-    }
+    operand_->evaluate();
+    disp = target_address = operand_->value();
 
     // try calculating the displacement using PC, then base, then immediate addressing
-    if (!(is_constant || is_literal))
+    if (!operand_->is_constant())
     {
       if (pc_relative_viable(target_address))
       {
@@ -239,15 +173,9 @@ namespace hax
       }
     }
 
-    if (is_constant)
-      targeting_flags = 0x0;
-
     // discard the 5 highest-order half-bytes (for negative values calculated with 2's complement)
-    if (!is_literal)
-    {
-      int foo = (opcode_ << 16) | addr_mode_ | targeting_flags;
-      objcode_ = utility::overwrite_bits<int>(disp, foo, 12, 20);
-    }
+    objcode_ = (opcode_ << 16) | addr_mode_ | targeting_flags;
+    objcode_ = utility::overwrite_bits<int>(disp, objcode_, 12, 20);
   }
 
   bool fmt3_instruction::is_valid() const

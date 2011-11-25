@@ -18,53 +18,34 @@
  *  along with HASM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "fmt1_instruction.hpp"
+#ifndef h_symbol_h
+#define h_symbol_h
+
+#include "hax.hpp"
+#include "operand.hpp"
 
 namespace hax
 {
-  using utility::stringify;
+  class symbol : public operand {
+    public:
 
-	fmt1_instruction::fmt1_instruction(opcode_t in_opcode, string_t const& in_mnemonic)
-  : instruction(in_opcode, in_mnemonic)
-  {
-    format_ = format::fmt_one;
-	}
+		explicit symbol(string_t const& in_label, instruction_t const* in_inst);
+    symbol()=delete;
+    symbol(const symbol& src);
+		symbol& operator=(const symbol& rhs);
+		virtual ~symbol();
 
-	fmt1_instruction::~fmt1_instruction()
-	{
-	}
+    //~ string_t const& label() const;
+    virtual void evaluate();
 
-  fmt1_instruction::fmt1_instruction(const fmt1_instruction& src)
-  : instruction(src)
-  {
-    copy_from(src);
-  }
+    protected:
 
-  fmt1_instruction& fmt1_instruction::operator=(const fmt1_instruction& rhs)
-  {
-    if (this != &rhs)
-      copy_from(rhs);
+    //~ string_t label_;
 
-    return *this;
-  }
+    void copy_from(const symbol&);
+    virtual std::ostream& to_stream(std::ostream&) const;
+	};
 
-  void fmt1_instruction::copy_from(const fmt1_instruction& src)
-  {
-    instruction::copy_from(src);
-  }
-
-  loc_t fmt1_instruction::length() const
-  {
-    return 1;
-  }
-
-  void fmt1_instruction::calc_target_address()
-  {
-  }
-
-  bool fmt1_instruction::is_valid() const
-  {
-    return true;
-  }
-
+  typedef symbol symbol_t;
 } // end of namespace
+#endif // h_symbol_h

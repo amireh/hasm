@@ -18,28 +18,30 @@
  *  along with HASM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "symbol.hpp"
-#include "symbol.hpp"
+#include "operands/symbol.hpp"
 #include "parser.hpp"
 #include "symbol_manager.hpp"
+#include <cassert>
 
 namespace hax
 {
   using utility::stringify;
 
-	symbol::symbol(string_t const& in_label)
-  : label_(in_label),
-    address_(0x0000),
-    value_(0),
-    is_resolved_(false)
+	symbol::symbol(string_t const& in_label, instruction_t const* in_inst)
+  : operand(in_label, in_inst)
   {
+
+    type_ = t_symbol;
+
+    //~ if (in_inst)
+      //~ evaluate();
 	}
 
 	symbol::~symbol()
 	{
 	}
 
-  symbol::symbol(const symbol& src)
+  symbol::symbol(const symbol& src) : operand(src.token_, src.inst_)
   {
     copy_from(src);
   }
@@ -54,50 +56,52 @@ namespace hax
 
   void symbol::copy_from(const symbol& src)
   {
-    this->label_ = src.label_;
-    this->address_ = src.address_;
-    this->is_resolved_ = src.is_resolved_;
+    //~ this->label_ = src.label_;
+    //~ this->address_ = src.address_;
+    //~ this->evaluated_ = src.evaluated_;
   }
 
   std::ostream& symbol::to_stream(std::ostream& in) const
   {
     in
-      << (is_resolved_ ? "defined" : "undefined")
-      << "[symbol: '" << label_ << "' @ "
-      << std::hex << std::setw(3) << std::setfill('0') << address_;
+      << (evaluated_ ? "defined" : "undefined")
+      << "[symbol: '" << token_ << "' @ "
+      << std::hex << std::setw(3) << std::setfill('0') << value();
 
     in << "]";
 
     return in;
   }
 
-  void symbol::set_address(loc_t in_addr)
-  {
-    if (is_resolved_)
-      throw symbol_redifinition(std::string("attempting to re-define symbol ") + this->dump());
+  //~ void symbol::set_address(loc_t in_addr)
+  //~ {
+    //~ if (evaluated_)
+      //~ throw symbol_redifinition(std::string("attempting to re-define symbol ") + this->dump());
+//~
+    //~ address_ = in_addr;
+    //~ evaluated_ = true;
+  //~ }
 
-    address_ = in_addr;
-    is_resolved_ = true;
-  }
+  //~ string_t const& symbol::label() const
+  //~ {
+    //~ return label_;
+  //~ }
 
-  string_t const& symbol::label() const
-  {
-    return label_;
-  }
+  //~ void symbol::assign_instruction(instruction_t const* in_inst)
+  //~ {
+    //~ operand::assign_instruction(in_inst);
+    //~ evaluate();
+  //~ }
 
-  bool symbol::is_resolved() const
+  void symbol::evaluate()
   {
-    return is_resolved_;
-  }
+    if (evaluated_)
+      return;
 
-  loc_t symbol::address() const
-  {
-    return address_;
-  }
+    assert(inst_);
+    value_ = inst_->location();
 
-  int symbol::value() const
-  {
-    return value_;
+    evaluated_ = true;
   }
 
 } // end of namespace

@@ -18,51 +18,32 @@
  *  along with HASM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef h_symbol_h
-#define h_symbol_h
+#ifndef h_fmt4_instruction_h
+#define h_fmt4_instruction_h
 
-#include "hax.hpp"
-#include "loggable.hpp"
-#include <vector>
+#include "instruction.hpp"
 
 namespace hax
 {
-  class symbol : public loggable {
+  class fmt4_instruction : public instruction {
     public:
 
-    symbol()=delete;
-		explicit symbol(string_t const& in_label);
-    symbol(const symbol& src);
-		symbol& operator=(const symbol& rhs);
-		virtual ~symbol();
+    fmt4_instruction() = delete;
+		explicit fmt4_instruction(opcode_t, const string_t&);
+    fmt4_instruction(const fmt4_instruction& src);
+		fmt4_instruction& operator=(const fmt4_instruction& rhs);
+		virtual ~fmt4_instruction();
 
-    string_t const& label() const;
-    int value() const;
-    loc_t address() const;
-    bool is_resolved() const;
+    virtual loc_t length() const;
+    virtual void assemble();
+    virtual bool is_valid() const;
 
-    void set_address(loc_t);
+    void assign_operand(string_t const& in_operand);
 
     protected:
-
-    string_t label_;
-    loc_t address_;
-    int value_;
-
-    /**
-     * the reason we use a flag to indicate whether this symbol has already been
-     * defined is because we can't rely on address_ being 0x000 as that is a valid
-     * address
-     **/
-    bool is_resolved_;
-
-    void copy_from(const symbol&);
+    void copy_from(const fmt4_instruction&);
 
     private:
-
-    virtual std::ostream& to_stream(std::ostream&) const;
 	};
-
-  typedef symbol symbol_t;
 } // end of namespace
-#endif // h_symbol_h
+#endif // h_fmt4_instruction_h

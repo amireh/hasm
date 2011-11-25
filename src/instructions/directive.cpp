@@ -25,6 +25,7 @@
 
 namespace hax
 {
+  extern bool VERBOSE;
   using utility::stringify;
 
 	directive::directive(opcode_t in_opcode, string_t const& in_mnemonic)
@@ -62,21 +63,12 @@ namespace hax
 
     if (mnemonic_ == "BYTE")
     {
-      string_t &operand = operands_.front();
-      size_t nr_bytes = operand.size();
-
-      // is it a stream of characters or a device identifier?
-      if (operand.size() > 3)
+      if (operand_ && operand_->is_constant())
       {
-        // character streams are denoted by C`stream` in plain letters
-        if (operand.find("C`") == 0)
-          nr_bytes = operand.size() - 3;
-        // device identifiers are denoted by X`identifier` in hex
-        else if (operand.find("X`") == 0)
-          nr_bytes = (operand.size() - 3) / 2;
-      }
-
-      length_ = 1 * nr_bytes;
+        operand_->evaluate();
+        length_ = 1 * operand_->length();
+      } else
+        throw invalid_operand("BYTE operands can only be constant decimal integers");
 
     } else if (mnemonic_ == "WORD")
     {
@@ -84,11 +76,11 @@ namespace hax
     } else if (mnemonic_ == "RESB")
     {
       assemblable_ = false;
-      length_ = 1 * utility::convertTo<int>(operands_.front());
+      length_ = 1 * utility::convertTo<int>(operand_str_);
     } else if (mnemonic_ == "RESW")
     {
       assemblable_ = false;
-      length_ = 3 * utility::convertTo<int>(operands_.front());
+      length_ = 3 * utility::convertTo<int>(operand_str_);
     } else if (mnemonic_ == "BASE")
       assemblable_ = false;
   }
@@ -98,52 +90,30 @@ namespace hax
     return length_;
   }
 
-  void directive::calc_target_address()
+  void directive::assemble()
   {
     if (mnemonic_ == "BASE")
     {
       //~ std::cout << "-- assigned base register @ ";
-      symbol_t *operand = symbol_manager::singleton().lookup(operands_.front());
-      assert(operand);
-      parser::singleton().set_base(operand->address());
-      std::cout << std::hex << std::setw(4) << std::setfill('0') << parser::singleton().base() << "\n";
+      //symbol_t *operand = symbol_manager::singleton().lookup(operand_str_);
+      //assert(operand);
+      parser::singleton().set_base(operand_->value());
+
+      if (VERBOSE)
+      std::cout
+        << "-- base register assigned @ "
+        << std::hex << std::setw(4) << std::setfill('0') << parser::singleton().base()
+        << "\n";
+
     } else if (mnemonic_ == "BYTE")
     {
-      string_t operand = operands_.front();
-
-      if (operand.find("C`") != std::string::npos)
-      {
-        // strip C``
-        operand = operand.substr(2, operand.size()-3);
-
-        std::stringstream hex_repr;
-        hex_repr << std::hex;
-        for (auto c : operand)
-          hex_repr << (int)c;
-
-        hex_repr >> objcode_;
-        objcode_width_ = operand.size();
-
-      } else if (operand.find("X`") != std::string::npos) {
-        // strip C``
-        operand = operand.substr(2, operand.size());
-        operand = operand.substr(0, operand.size()-1);
-
-        std::stringstream hex_repr;
-        hex_repr << std::hex;
-        for (auto c : operand)
-          hex_repr << c;
-
-        hex_repr >> objcode_;
-        objcode_width_ = operand.size();
-      } else {
-        throw invalid_operand("unrecognized token in BYTE operation: " + operand);
-      }
+      // BYTE constant values have already been evaluated in preprocess()
+      objcode_ = operand_->value();
     } else if (mnemonic_ == "END")
     {
         string_t operand_str = "";
-        if (!operands_.empty())
-          operand_str = operands_.front();
+        if (!operand_str_.empty())
+          operand_str = operand_str_;
         else
           operand_str = "0";
 
@@ -151,7 +121,7 @@ namespace hax
         if (!operand)
           throw undefined_symbol("in END instruction: " + operand_str);
 
-        objcode_ = operand->address();
+        objcode_ = operand->value();
 
     }
   }

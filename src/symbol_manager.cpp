@@ -74,14 +74,18 @@ namespace hax
 
   symbol_t *const symbol_manager::declare(string_t const& in_symbol)
   {
-    symbol_t *sym = new symbol_t(in_symbol);
+    symbols_t::const_iterator finder = symbols_.find(in_symbol);
+    if (finder != symbols_.end())
+      return finder->second;
+
+    symbol_t *sym = new symbol_t(in_symbol, 0);
     symbols_.insert(std::make_pair(in_symbol, sym));
     return sym;
   }
 
   void symbol_manager::define(symbol_t *in_symbol, loc_t in_loc)
   {
-    in_symbol->set_address(in_loc);
+    in_symbol->_assign_value(in_loc);
   }
 
   symbol_t *const symbol_manager::lookup(string_t const& in_label) const
@@ -93,7 +97,7 @@ namespace hax
     return entry->second;
   }
 
-  bool symbol_manager::is_declared(string_t const& in_name) const
+  /*bool symbol_manager::is_declared(string_t const& in_name) const
   {
     return symbols_.find(in_name) != symbols_.end();
   }
@@ -105,7 +109,7 @@ namespace hax
       return false;
 
     return sym->is_resolved();
-  }
+  }*/
 
   void symbol_manager::dump(std::ostream& out) const
   {
@@ -116,9 +120,9 @@ namespace hax
       symbol_t *symbol = entry.second;
       out << std::uppercase
       << "  " << ++i << ". "
-      << symbol->label() << "\t"
-      << (symbol->is_resolved() ? "TRUE" : "FALSE") << "\t"
-      << std::hex << symbol->address() << "\n";
+      << symbol->token() << "\t"
+      << (symbol->is_evaluated() ? "TRUE" : "FALSE") << "\t"
+      << std::hex << symbol->value() << "\n";
     }
   }
 } // end of namespace

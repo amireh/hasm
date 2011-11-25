@@ -105,6 +105,32 @@ namespace hax { namespace utility {
     return out;
   }
 
+  inline static
+  void iremove_in_string(std::string& in, char delim)
+  {
+    size_t idx;
+    while ((idx = in.find(delim)) != std::string::npos)
+      in.erase(idx, 1);
+  }
+
+  inline static
+  std::string remove_in_string(std::string const& in, char delim)
+  {
+    std::string out(in);
+    hax::utility::iremove_in_string(out, delim);
+    return out;
+  }
+
+  inline static
+  bool is_decimal_nr(std::string const& in)
+  {
+    for (auto c : in)
+      if (c < '0' || c > '9')
+        return false;
+
+    return true;
+  }
+
   template<typename IntType>
   IntType overwrite_bits(IntType dst, IntType src, int pos, int len) {
       IntType mask = (((IntType)1 << len) - 1) << pos;

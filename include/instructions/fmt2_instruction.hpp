@@ -18,38 +18,34 @@
  *  along with HASM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef h_fmt3_instruction_h
-#define h_fmt3_instruction_h
+#ifndef h_fmt2_instruction_h
+#define h_fmt2_instruction_h
 
 #include "instruction.hpp"
 
 namespace hax
 {
-  class fmt3_instruction : public instruction {
+  class fmt2_instruction : public instruction {
     public:
 
-		fmt3_instruction() = delete;
-		explicit fmt3_instruction(opcode_t, const string_t&);
-    fmt3_instruction(const fmt3_instruction& src);
-		fmt3_instruction& operator=(const fmt3_instruction& rhs);
-		virtual ~fmt3_instruction();
+    fmt2_instruction() = delete;
+		explicit fmt2_instruction(opcode_t, const string_t&);
+    fmt2_instruction(const fmt2_instruction& src);
+		fmt2_instruction& operator=(const fmt2_instruction& rhs);
+		virtual ~fmt2_instruction();
 
     virtual loc_t length() const;
-    virtual void calc_target_address();
+    virtual void assemble();
     virtual bool is_valid() const;
 
-    virtual void preprocess();
+    void assign_operand(string_t const& in_token);
 
     protected:
-    void copy_from(const fmt3_instruction&);
-
-    void find_addressing_mode();
-
-    bool pc_relative_viable(int& address) const;
-    bool base_relative_viable(int& address) const;
-    bool immediate_viable(int& address) const;
+    void copy_from(const fmt2_instruction&);
+    operand_t *lhs_;
+    operand_t *rhs_;
 
     private:
 	};
 } // end of namespace
-#endif // h_fmt3_instruction_h
+#endif // h_fmt2_instruction_h

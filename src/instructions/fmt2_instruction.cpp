@@ -29,7 +29,9 @@ namespace hax
   using utility::stringify;
 
 	fmt2_instruction::fmt2_instruction(opcode_t in_opcode, string_t const& in_mnemonic)
-  : instruction(in_opcode, in_mnemonic)
+  : instruction(in_opcode, in_mnemonic),
+    lhs_(0),
+    rhs_(0)
   {
     format_ = format::fmt_two;
     objcode_width_ = 4;
@@ -37,6 +39,8 @@ namespace hax
 
 	fmt2_instruction::~fmt2_instruction()
 	{
+    lhs_ = 0;
+    rhs_ = 0;
 	}
 
   fmt2_instruction::fmt2_instruction(const fmt2_instruction& src)
@@ -63,35 +67,36 @@ namespace hax
     return 2;
   }
 
-  void fmt2_instruction::calc_target_address()
+  void fmt2_instruction::assign_operand(string_t const& in_token)
   {
     symbol_manager &sym_mgr = symbol_manager::singleton();
 
-    assert(!operands_.empty());
+    std::vector<string_t> operands;
 
     // we have to split the operands, if there's more than one
-    string_t &operand_str = operands_.front();
-    bool has_two_operands = operand_str.find(",") != std::string::npos;
+    bool has_two_operands = in_token.find(",") != std::string::npos;
     if (has_two_operands)
     {
-      std::vector<string_t> operands_str = utility::split(operand_str, ',');
-      assert(operands_str.size() == 2);
-      // replace the first operand with the current one (the joined one)
-      operand_str = operands_str.front();
-      // and assign the new one
-      this->assign_operand(operands_str.back());
+      operands = utility::split(in_token, ',');
+      assert(operands.size() == 2);
     } else {
-      string_t operand_str = "0";
-      this->assign_operand(operand_str); // second operand is nil
+
+      operands.push_back(in_token);
+      operands.push_back("0"); // second register is nil
     }
 
-    assert(operands_.size() == 2);
+    lhs_ = sym_mgr.declare(operands.front());
+    rhs_ = sym_mgr.declare(operands.back());
 
-    symbol_t *lhs = sym_mgr.lookup(operands_.front());
-    symbol_t *rhs = sym_mgr.lookup(operands_.back());
+  }
+
+  void fmt2_instruction::assemble()
+  {
+    lhs_->evaluate();
+    rhs_->evaluate();
 
     std::stringstream target_address;
-    target_address << std::hex << (int)opcode_ << lhs->address() << rhs->address();
+    target_address << std::hex << (int)opcode_ << lhs_->value() << rhs_->value();
     target_address >> objcode_;
   }
 

@@ -1,15 +1,18 @@
+INCLUDE_DIRECTORIES(../include/operands ../include/instructions)
 # add sources
 SET(SRCS
     parser.cpp
     serializer.cpp
-    symbol.cpp
+    operand.cpp
+    operands/constant.cpp
+    operands/symbol.cpp
     symbol_manager.cpp
     instruction.cpp
-    fmt1_instruction.cpp
-    fmt2_instruction.cpp
-    fmt3_instruction.cpp
-    fmt4_instruction.cpp
-    directive.cpp
+    instructions/fmt1_instruction.cpp
+    instructions/fmt2_instruction.cpp
+    instructions/fmt3_instruction.cpp
+    instructions/fmt4_instruction.cpp
+    instructions/directive.cpp
     instruction_factory.cpp
     main.cpp)
 

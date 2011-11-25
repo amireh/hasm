@@ -289,6 +289,7 @@ namespace hax
 
 
       // assign label & operands
+      assert(tokens.size() <= 1);
       for (auto _token : tokens)
       {
         inst->assign_operand(_token);
@@ -314,7 +315,7 @@ namespace hax
     for (auto inst : instructions_)
     {
       inst->resolve_references();
-      inst->calc_target_address();
+      inst->assemble();
       std::cout << inst << "\n";
     }
 
