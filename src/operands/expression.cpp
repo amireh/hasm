@@ -21,6 +21,7 @@
 #include "operands/expression.hpp"
 #include "operand_factory.hpp"
 #include "symbol_manager.hpp"
+#include "parser.hpp"
 
 namespace hax
 {
@@ -58,7 +59,8 @@ namespace hax
       //~ std::cout << "\tchecking whether " << token << " is a symbol\n";
       if (op_fact.__is_symbol(token))
       {
-        extrefs_.push_back(symbol_manager::singleton().declare(token));
+        symbol_manager* symmgr = parser::singleton().current_section()->symmgr();
+        extrefs_.push_back(symmgr->declare(token));
       }
     }
 

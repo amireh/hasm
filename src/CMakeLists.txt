@@ -3,6 +3,7 @@ INCLUDE_DIRECTORIES(../include/operands ../include/instructions)
 SET(SRCS
     parser.cpp
     serializer.cpp
+    control_section.cpp
     operand.cpp
     operand_factory.cpp
     operands/constant.cpp

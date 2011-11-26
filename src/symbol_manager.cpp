@@ -29,7 +29,7 @@
 namespace hax
 {
 
-	symbol_manager* symbol_manager::__instance = 0;
+	//~ symbol_manager* symbol_manager::__instance = 0;
 
 	symbol_manager::symbol_manager()
   {
@@ -63,7 +63,7 @@ namespace hax
     symbols_.clear();
 	}
 
-	symbol_manager* symbol_manager::singleton_ptr()
+	/*symbol_manager* symbol_manager::singleton_ptr()
   {
 		return __instance = (!__instance) ? new symbol_manager() : __instance;
 	}
@@ -71,7 +71,7 @@ namespace hax
 	symbol_manager& symbol_manager::singleton()
   {
 		return *singleton_ptr();
-	}
+	}*/
 
   symbol_t *const symbol_manager::declare(string_t const& in_symbol)
   {

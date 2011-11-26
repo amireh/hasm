@@ -20,6 +20,7 @@
 
 #include "operand_factory.hpp"
 #include "symbol_manager.hpp"
+#include "parser.hpp"
 
 namespace hax
 {
@@ -68,7 +69,7 @@ namespace hax
     } else {
       // we do not own symbol objects, so we grab a reference and release it
       // when we're destructed
-      _operand = symbol_manager::singleton().declare(operand_str);
+      _operand = parser::singleton().current_section()->symmgr()->declare(operand_str);
     }
     return _operand;
   }

@@ -28,11 +28,12 @@ namespace hax
 {
   using utility::stringify;
 
-	instruction::instruction(opcode_t in_opcode, string_t const& in_mnemonic)
+	instruction::instruction(opcode_t in_opcode, string_t const& in_mnemonic, pblock_t* in_block)
   : opcode_(in_opcode),
     location_(0),
     length_(0),
     label_(0),
+    pblock_(in_block),
     operand_(0),
     format_(format::fmt_undefined),
     addr_mode_(addressing_mode::undefined),
@@ -42,12 +43,12 @@ namespace hax
     objcode_width_(6),
     relocatable_(false),
     assemblable_(true)
-
   {
 	}
 
 	instruction::~instruction()
 	{
+    pblock_ = 0;
     label_ = 0;
     if (!operand_->is_symbol())
       delete operand_;
@@ -93,7 +94,8 @@ namespace hax
     if (label_)
     {
       //~ std::cout << "defining symbol: " << label_->token() << " with address: " << location() << "\n";
-      symbol_manager::singleton().define(label_, location());
+      symbol_manager *symmgr = parser::singleton().current_section()->symmgr();
+      symmgr->define(label_, location());
     }
   }
 
@@ -101,7 +103,7 @@ namespace hax
   {
     label_ = in_label;
 
-    //symbol_manager::singleton().declare(label_->label(), location());
+    //parser::singleton().current_section()->symmgr()->declare(label_->label(), location());
   }
 
   void instruction::assign_operand(string_t const& in_token)

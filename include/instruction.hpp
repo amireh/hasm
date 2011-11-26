@@ -32,7 +32,9 @@ namespace hax
   extern bool VERBOSE;
 
   class symbol;
+  class program_block;
   typedef symbol symbol_t;
+  typedef program_block pblock_t;
 
   typedef enum {
     fmt_undefined = 0x00,
@@ -56,7 +58,7 @@ namespace hax
     typedef addressing_mode addressing_mode_t;
 
     instruction() = delete;
-		explicit instruction(opcode_t, const string_t&);
+		explicit instruction(opcode_t, const string_t&, pblock_t* block=0);
     instruction(const instruction& src);
 		instruction& operator=(const instruction& rhs);
 		virtual ~instruction();
@@ -139,6 +141,7 @@ namespace hax
     loc_t length_;
 
     symbol_t* label_;
+    pblock_t* pblock_;
 
     //~ operands_t operands_;
     operand_t *operand_;

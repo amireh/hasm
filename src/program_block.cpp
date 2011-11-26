@@ -19,22 +19,19 @@
  */
 
 #include "program_block.hpp"
+#include "control_section.hpp"
 
 namespace hax
 {
-  program_block::program_block(string_t in_name)
+  program_block::program_block(string_t in_name, csect_t* in_sect)
   : locctr_(0),
-    name_(in_name)
+    name_(in_name),
+    csect_(in_sect)
   {
   }
 
   program_block::~program_block()
   {
-    while (!instructions_.empty())
-    {
-      delete instructions_.back();
-      instructions_.pop_back();
-    }
   }
 
   loc_t program_block::locctr() const
@@ -51,6 +48,7 @@ namespace hax
   {
     in_inst->assign_location(locctr_);
 
+    csect_->__add_instruction(in_inst);
     instructions_.push_back(in_inst);
   }
 

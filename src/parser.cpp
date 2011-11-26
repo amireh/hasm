@@ -41,11 +41,7 @@ namespace hax
 
 	parser::~parser()
 	{
-    while (!pblocks_.empty())
-    {
-      delete pblocks_.back();
-      pblocks_.pop_back();
-    }
+
 	}
 
 	parser* parser::singleton_ptr()
@@ -112,6 +108,7 @@ namespace hax
     register_op("WD",     0xDC, format::fmt_three | format::fmt_four);
 
     register_op("START",  0x00, format::fmt_directive);
+    register_op("CSECT",  0x00, format::fmt_directive);
     register_op("END",    0x00, format::fmt_directive);
     register_op("USE",    0x00, format::fmt_directive);
     register_op("CLEAR",  0x00, format::fmt_directive);
@@ -197,9 +194,6 @@ namespace hax
     std::cout << "+- \n";
     std::cout << "+- Analyzing entries...\n";
 
-    // begin the default program block
-    switch_to_block("Unnamed");
-
     while (!in.eof())
     //~ for (int i=0; i < 4; ++i)
     {
@@ -275,10 +269,24 @@ namespace hax
       instruction* inst = 0;
       symbol_t* label = 0;
 
+      // if by now we were not assigned a control section, abort
+      // check whether this is a CSECT or START entry
+      if (tokens.size() == 2)
+      {
+        if (tokens.back() == "START" || tokens.back() == "CSECT")
+        {
+          __register_section(tokens.front());
+        }
+      }
+
+      if (!csect_) {
+        throw invalid_context("an input program must begin with a START or CSECT entry to define a control section!");
+      }
+
       // find out whether the first token is a label or an opcode
       if (!is_op(tokens.front()))
       {
-        label = symbol_manager::singleton().declare(tokens.front());
+        label = csect_->symmgr()->declare(tokens.front());
         tokens.pop_front();
       }
 
@@ -295,7 +303,6 @@ namespace hax
       if (label)
         inst->assign_label(label);
 
-
       // assign label & operands
       assert(tokens.size() <= 1);
       for (auto _token : tokens)
@@ -304,41 +311,37 @@ namespace hax
       }
 
       inst->assign_line(line);
-      pblock_->add_instruction(inst);
+      csect_->block()->add_instruction(inst);
       //~ inst->assign_location(locctr_);
       inst->preprocess();
-      pblock_->step();
+      csect_->block()->step();
       //~ locctr_ += inst->length();
 
       std::cout << inst << "\n";
 
-      instructions_.push_back(inst);
+      //~ instructions_.push_back(inst);
       inst = 0;
     }
 
     std::cout << "\n+-\n";
     if (VERBOSE)
-      symbol_manager::singleton().dump(std::cout);
+      csect_->symmgr()->dump(std::cout);
+
+    // dump stats
+    std::cout
+      << "+-Pass1: complete\n"
+      << "+-\tNumber of control sections: " << csects_.size() << "\n";
+    for (auto sect : csects_)
+      std::cout << sect;
+
+
     std::cout << "+- Pass2\n";
-    std::cout << "+- Calculating object code...\n";
+    std::cout << "+- Assembling object code...\n";
 
-    int idx = 0;
-    for (auto block : pblocks_) {
-      std::cout << "Assembling instructions in program block '" << block->name() << "'\n";
-      block->shift(idx);
-      idx += block->locctr();
+    for (auto sect : csects_) {
+      sect->assemble();
+      sect->serialize(out_path);
     }
-
-    //~ for (auto block : pblocks_) {
-      for (auto inst : instructions_)
-      {
-        //~ inst->resolve_references();
-        inst->assemble();
-        std::cout << inst << "\n";
-      }
-    //~ }
-
-    serializer::singleton().process(instructions_, out_path);
 
     in.close();
   }
@@ -352,29 +355,25 @@ namespace hax
     base_ = in_loc;
   }
 
-  pblock_t* parser::pblock() const
+  csect_t* parser::current_section() const
   {
-    return pblock_;
+    return csect_;
   }
-  parser::pblocks_t const& parser::pblocks() const
+  csect_t* parser::sect() const
   {
-    return pblocks_;
-  }
-
-  void parser::switch_to_block(std::string in_name)
-  {
-    for (auto block : pblocks_)
-      if (block->name() == in_name) {
-        pblock_ = block;
-        return;
-      }
-
-    pblock_ = new program_block(in_name);
-    pblocks_.push_back(pblock_);
+    return csect_;
   }
 
-  const parser::instructions_t& parser::instructions() const
+  void parser::__register_section(std::string in_name)
   {
-    return instructions_;
+    // verify no other control section is already registered with this name
+    for (auto sect : csects_)
+      if (sect->name() == in_name)
+        throw invalid_entry("attempt to re-define a control section named '" + in_name + "'");
+
+    std::cout << "info: registering a control section '" << in_name << "'\n";
+    csect_t *new_sect = new control_section(in_name);
+    csects_.push_back(new_sect);
+    csect_ = new_sect;
   }
 } // end of namespace

@@ -69,7 +69,7 @@ namespace hax
 
   void fmt2_instruction::assign_operand(string_t const& in_token)
   {
-    symbol_manager &sym_mgr = symbol_manager::singleton();
+    symbol_manager *symmgr = parser::singleton().current_section()->symmgr();
 
     std::vector<string_t> operands;
 
@@ -85,8 +85,8 @@ namespace hax
       operands.push_back("0"); // second register is nil
     }
 
-    lhs_ = sym_mgr.declare(operands.front());
-    rhs_ = sym_mgr.declare(operands.back());
+    lhs_ = symmgr->declare(operands.front());
+    rhs_ = symmgr->declare(operands.back());
   }
 
   void fmt2_instruction::assemble()

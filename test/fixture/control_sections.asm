@@ -26,8 +26,8 @@ MAXLEN  EQU      BUFEND-BUFFER
 ;
 ; SUBROUTINE TO READ RECORD INTO BUFFER
 ;
-        USE
-RDREC   CLEAR   X
+RDREC   CSECT
+        CLEAR   X
         CLEAR   A
         CLEAR   S
         +LDT    #MAXLEN
@@ -46,8 +46,8 @@ INPUT   BYTE    =X'F1'
 ;
 ; SUBROUTINE TO WRITE RECORD FROM BUFFER
 ;
-        USE
-WRREC   CLEAR   X
+WRREC   CSECT
+        CLEAR   X
         LDT     LENGTH
 WLOOP   TD      =X'05'
         JEQ     WLOOP

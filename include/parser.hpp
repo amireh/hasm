@@ -23,7 +23,8 @@
 
 #include "hax.hpp"
 #include "instruction.hpp"
-#include "program_block.hpp"
+//~ #include "program_block.hpp"
+#include "control_section.hpp"
 #include <map>
 #include <list>
 #include <tuple>
@@ -34,8 +35,9 @@ namespace hax
   class serializer;
   class parser {
     public:
-    typedef std::list<pblock_t*> pblocks_t;
-    typedef std::list<instruction_t*> instructions_t;
+    //typedef std::list<pblock_t*> pblocks_t;
+    //typedef std::list<instruction_t*> instructions_t;
+    typedef std::list<csect_t*> csects_t;
 
     static parser* singleton_ptr();
     static parser& singleton();
@@ -57,12 +59,32 @@ namespace hax
     loc_t base() const;
     void set_base(loc_t in_loc);
 
-    instructions_t const& instructions() const;
+    //instructions_t const& instructions() const;
     //~ loc_t locctr() const;
-    pblock_t *pblock() const;
-    pblocks_t const& pblocks() const;
+    //~ pblock_t *pblock() const;
+    //pblocks_t const& pblocks() const;
 
-    void switch_to_block(std::string in_block = "Unnamed");
+    /**
+     * creates a new control section identified by in_name and assigns it as
+     * the current section of the parser
+     *
+     * @note
+     * this is called internally by directive::preprocess() when a START or CSECT
+     * assembler directive is encountered
+     **/
+    void __register_section(std::string in_name);
+
+    /**
+     * returns a reference to the current control section being parsed
+     **/
+    csect_t* current_section() const;
+    csect_t* sect() const;
+
+    /**
+     * assigns the block identified by in_name to be the currently used one in
+     * the current control section
+     **/
+    //~ void switch_to_block(std::string in_name = "Unnamed");
 
     protected:
     //~ friend class serializer;
@@ -80,11 +102,13 @@ namespace hax
 
     //~ loc_t locctr_;
 
-    pblock_t *pblock_; // current program block
-    pblocks_t pblocks_;
+    //~ pblock_t *pblock_; // current program block
+    csect_t *csect_; // current control section
+    //pblocks_t pblocks_;
 
     optable_t optable_;
-    instructions_t instructions_;
+    //instructions_t instructions_;
+    csects_t csects_;
     loc_t base_;
 
 		parser();

@@ -122,8 +122,14 @@ namespace hax
       else
         block_name = operand_->token();
 
-      parser::singleton().switch_to_block(block_name);
-    }
+      parser::singleton().sect()->switch_to_block(block_name);
+    } /*else if (mnemonic_ == "START" || mnemonic_ == "CSECT")
+    {
+      if (!operand_ || operand_->token().empty())
+        throw invalid_operand(mnemonic_ + " entries must contain a name operand");
+
+      parser::singleton().__register_section(operand_->token());
+    }*/
   }
 
   loc_t directive::length() const
@@ -160,7 +166,9 @@ namespace hax
         else
           operand_str = "0";
 
-        symbol_t *operand = symbol_manager::singleton().lookup(operand_str);
+        symbol_manager *symmgr = parser::singleton().current_section()->symmgr();
+        symbol_t *operand = symmgr->lookup(operand_str);
+
         if (!operand)
           throw undefined_symbol("in END instruction: " + operand_str);
 

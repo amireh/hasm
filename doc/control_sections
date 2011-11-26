@@ -1,0 +1,20 @@
+* control section has state:
+  # has a symbol manager (with a sym table)
+  # has many program blocks
+  # has external references
+  # has external definitions
+  # has no starting address
+  # has a header in two forms:
+    1. [NAME] START 0
+    2. [NAME] CSECT 0
+
+* when an external reference is defined:
+  # a symbol is:
+    1. declared
+    2. faked to be evaluated with a value of 0
+    3. set with a flag to indicate that it needs a R record
+
+* when an external definition is defined:
+  # a symbol is:
+    1. declared
+    2. set with a flag to indicate that it needs to be in a D record

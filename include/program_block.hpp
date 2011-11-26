@@ -26,13 +26,16 @@
 
 namespace hax
 {
+  class control_section;
+  typedef control_section csect_t;
+
   class program_block {
     public:
 
     typedef instruction inst_t;
     typedef std::list<inst_t*> instructions_t;
 
-		program_block(string_t in_name);
+		program_block(string_t in_name, csect_t* in_section);
 		virtual ~program_block();
 
     // program blocks can not be copied
@@ -59,6 +62,7 @@ namespace hax
     loc_t locctr_;
     string_t name_;
     instructions_t instructions_;
+    csect_t* csect_;
 	};
 
   typedef program_block pblock_t;

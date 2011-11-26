@@ -30,10 +30,13 @@ namespace hax
   class symbol_manager {
     public:
 
-    static symbol_manager* singleton_ptr();
-    static symbol_manager& singleton();
-
+    //static symbol_manager* singleton_ptr();
+    //static symbol_manager& singleton();
+		symbol_manager();
 		virtual ~symbol_manager();
+
+    symbol_manager(const symbol_manager& src)=delete;
+		symbol_manager& operator=(const symbol_manager& rhs)=delete;
 
     /**
      * registers a symbol with the given name in the symbol table if it hasn't
@@ -69,11 +72,8 @@ namespace hax
     symbols_t symbols_;
 
     private:
-    static symbol_manager *__instance;
+    //~ static symbol_manager *__instance;
 
-		symbol_manager();
-    symbol_manager(const symbol_manager& src);
-		symbol_manager& operator=(const symbol_manager& rhs);
 	};
 } // end of namespace
 #endif // h_symbol_manager_h
