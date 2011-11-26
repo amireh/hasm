@@ -98,10 +98,10 @@ namespace hax
     if (addr_mode_ == addressing_mode::immediate)
     {
       // if it's an immediate operand
-      if (operand_->is_constant()) {
+      //~ if (operand_->is_constant()) {
         targeting_flags = 0x1 << 24;
         relocatable_ = false;
-      }
+      //~ }
     } else if (addr_mode_ == addressing_mode::simple) {
       targeting_flags = 0x3 << 24; // neither indirect nor immediate
     } else {

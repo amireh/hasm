@@ -77,6 +77,7 @@ namespace hax
   {
     return token.find("=C'") != std::string::npos
         || token.find("=X'") != std::string::npos
+        || token[0] == '*'
         || utility::is_decimal_nr(token);
   }
 

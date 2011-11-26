@@ -89,6 +89,12 @@ namespace hax
 
       bool is_word = mnemonic_ == "RESW";
       length_ = (is_word ? 3 : 1) * operand_->value();
+
+      // assign the value of the label as the number of bytes/words reserved
+      if (label_) {
+        label_->_assign_value(operand_->value());
+      }
+
     } else if (mnemonic_ == "BASE") {
 
     } else if (mnemonic_ == "EQU") {
@@ -97,6 +103,7 @@ namespace hax
       try {
         operand_->evaluate();
         label_->_assign_value(operand_->value());
+        //~ label_->assign_address(operand_->value());
       } catch (unevaluated_operand& e) {
         std::cerr << "Warning: " << e.what() << "\n";
       }

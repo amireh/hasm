@@ -62,7 +62,7 @@ namespace hax
       }
     }
 
-    //~ std::cout << "\texpression contains " << extrefs_.size() << " forward references to symbols\n";
+    std::cout << "\texpression contains " << extrefs_.size() << " forward references to symbols\n";
 	}
 
 	expression::~expression()
@@ -96,7 +96,7 @@ namespace hax
       {
         if (!sym->is_evaluated())
         {
-          //~ std::cout << "\t" << sym << " is still not resolved, can not evaluate\n";
+          std::cout << "\t" << sym << " is still not resolved, can not evaluate\n";
           return;
         }
       }
@@ -112,7 +112,7 @@ namespace hax
            for (auto sym : extrefs_)
            {
              if (sym->token() == token) {
-              //~ std::cout << "\tsubstituted external ref term: " << token << " with " << sym->value() << "\n";
+              std::cout << "\tsubstituted external ref term: " << token << " with " << sym->value() << "\n";
               token = stringify(sym->value());
               substituted = true;
             }

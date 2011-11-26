@@ -58,10 +58,10 @@ namespace hax
     void set_base(loc_t in_loc);
 
     instructions_t const& instructions() const;
+    loc_t locctr() const;
 
     protected:
-    friend class serializer;
-    loc_t locctr() const;
+    //~ friend class serializer;
 
 
     private:

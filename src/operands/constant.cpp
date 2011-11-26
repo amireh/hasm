@@ -19,6 +19,7 @@
  */
 
 #include "operands/constant.hpp"
+#include "parser.hpp"
 #include <cmath>
 
 namespace hax
@@ -39,6 +40,8 @@ namespace hax
       handler_ = &constant::handle_hex_literal;
       token_ = token_.substr(3, token_.size()-4);
 
+    } else if (in_token[0] == '*') {
+      handler_ = &constant::handle_current_loc;
     } else {
       if (token_[0] == '#')
         token_ = token_.substr(1, token_.size()-1);
@@ -108,6 +111,14 @@ namespace hax
   {
     value_ = utility::convertTo<int>(token_);
     length_ = token_.size();
+    //~ std::cout << "converted constant '" << token_ << "' into " << value_ << "\n";
+  }
+
+  void constant::handle_current_loc()
+  {
+    value_ = parser::singleton().locctr();
+    length_ = 0;
+    std::cout << "assigned location counter " << value_ << "\n";
     //~ std::cout << "converted constant '" << token_ << "' into " << value_ << "\n";
   }
 } // end of namespace

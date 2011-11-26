@@ -82,6 +82,7 @@ namespace hax
   void symbol::assign_address(loc_t in_address)
   {
     address_ = in_address;
+    evaluated_ = true;
   }
 
   uint32_t symbol::value() const {
