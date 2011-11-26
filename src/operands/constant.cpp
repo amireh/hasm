@@ -116,7 +116,7 @@ namespace hax
 
   void constant::handle_current_loc()
   {
-    value_ = parser::singleton().locctr();
+    value_ = parser::singleton().pblock()->locctr();
     length_ = 0;
     std::cout << "assigned location counter " << value_ << "\n";
     //~ std::cout << "converted constant '" << token_ << "' into " << value_ << "\n";

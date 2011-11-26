@@ -29,7 +29,8 @@ namespace hax
 
 	symbol::symbol(string_t const& in_label)
   : operand(in_label),
-    address_(0x0)
+    address_(0x0),
+    has_real_value_(false)
   {
 
     type_ = t_symbol;
@@ -86,10 +87,22 @@ namespace hax
   }
 
   uint32_t symbol::value() const {
-    if (!evaluated_)
+    //~ if (!evaluated_)
+      //~ return address_;
+    if (has_real_value_)
+      return value_;
+    else
       return address_;
-
-    return value_;
+    //~ return value_;
   }
 
+  loc_t symbol::address() const
+  {
+    return address_;
+  }
+
+  void symbol::set_has_real_value(bool f)
+  {
+    has_real_value_ = f;
+  }
 } // end of namespace

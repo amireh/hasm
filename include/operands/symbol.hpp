@@ -43,9 +43,13 @@ namespace hax
 
     virtual uint32_t value() const;
 
+    loc_t address() const;
+    void set_has_real_value(bool f);
+
     protected:
 
     loc_t address_;
+    bool has_real_value_;
     //~ string_t label_;
 
     void copy_from(const symbol&);

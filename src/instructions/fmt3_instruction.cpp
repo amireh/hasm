@@ -132,9 +132,14 @@ namespace hax
     int target_address = 0x0;
     int disp = 0x0;
     uint16_t targeting_flags = 0x0;
-
     operand_->evaluate();
-    disp = target_address = operand_->value();
+    if (addr_mode_ != addressing_mode::immediate && operand_->is_symbol())
+      disp = target_address = static_cast<symbol*>(operand_)->address();
+    else
+      disp = target_address = operand_->value();
+
+    if (indexed_)
+      targeting_flags |= 0x008000;
 
     // try calculating the displacement using PC, then base, then immediate addressing
     if (!operand_->is_constant())
@@ -160,7 +165,8 @@ namespace hax
           << target_address << " - "
           << (location() + length()) << " = " << disp << "\n";
 
-        targeting_flags |= indexed_ ? 0x00C000 : 0x004000;
+        //~ targeting_flags |= indexed_ ? 0x00C000 : 0x004000;
+        targeting_flags |= 0x004000;
       } else if (immediate_viable(target_address))
       {
         disp = target_address;

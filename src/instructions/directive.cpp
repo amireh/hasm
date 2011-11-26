@@ -92,7 +92,7 @@ namespace hax
 
       // assign the value of the label as the number of bytes/words reserved
       if (label_) {
-        label_->_assign_value(operand_->value());
+        //~ label_->_assign_value(operand_->value());
       }
 
     } else if (mnemonic_ == "BASE") {
@@ -103,14 +103,26 @@ namespace hax
       try {
         operand_->evaluate();
         label_->_assign_value(operand_->value());
+        label_->set_has_real_value(true);
         //~ label_->assign_address(operand_->value());
       } catch (unevaluated_operand& e) {
         std::cerr << "Warning: " << e.what() << "\n";
       }
 
+      if (operand_->is_symbol())
+        static_cast<symbol*>(operand_)->set_has_real_value(true);
+
       if (!operand_->is_evaluated())
         throw invalid_operand("EQU operands must be either constant decimal integers, previously defined symbols, or expressions of previously defined symbols");
 
+    } else if (mnemonic_ == "USE") {
+      std::string block_name;
+      if (!operand_)
+        block_name = "Unnamed";
+      else
+        block_name = operand_->token();
+
+      parser::singleton().switch_to_block(block_name);
     }
   }
 

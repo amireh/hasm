@@ -44,7 +44,7 @@ namespace hax
     /**
      * assigns the address in_loc to the given symbol in_symbol
      **/
-    void define(symbol_t* in_symbol, loc_t in_loc);
+    symbol_t* define(symbol_t* in_symbol, loc_t in_loc, bool value_and_address = false);
 
     /**
      * returns the symbol identified by name in_name, or 0 in case it wasn't found

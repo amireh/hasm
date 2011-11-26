@@ -32,7 +32,7 @@ namespace hax
   extern bool VERBOSE;
 
 	serializer* serializer::__instance = 0;
-	const uint8_t serializer::t_record::maxlen = 0x1D;
+	const uint8_t serializer::t_record::maxlen = 0x1E;
 
 	serializer::serializer()
   {
@@ -56,10 +56,12 @@ namespace hax
   {
     if (rec->length >= t_record::maxlen)
       return true;
-    if (inst->mnemonic() == "RESW" || inst->mnemonic() == "RESB")
+    if (inst->mnemonic() == "RESW" || inst->mnemonic() == "RESB" || inst->mnemonic() == "USE")
       return true;
-    if (rec->length + inst->length() > t_record::maxlen)
+    if (rec->length + inst->length() > t_record::maxlen) {
+      std::cout << "IM HERE ! " << rec->length << " + " << inst->length() << "\n";
       return true;
+    }
 
     return false;
   }
@@ -73,7 +75,12 @@ namespace hax
     }
 
     std::cout << "+- Serializer: writing object program\n";
-    parser::instructions_t const& instructions = parser::singleton().instructions();
+    std::list<instruction_t*> const& instructions = parser::singleton().instructions();
+    //~ std::list<instruction_t*> instructions;
+    //~ for (auto pblock : parser::singleton().pblocks())
+      //~ for (auto inst : pblock->instructions())
+        //~ instructions.push_back(inst);
+
     if (instructions.empty())
     {
       std::cerr << "FATAL: no instructions parsed to serialize! aborting\n";
@@ -109,7 +116,7 @@ namespace hax
     t_record *rec = new t_record();
     rec->address = instructions.front()->location();
     rec->length = 0x00;
-    for (parser::instructions_t::const_iterator _itr = instructions.begin();
+    for (std::list<instruction_t*>::const_iterator _itr = instructions.begin();
       _itr != instructions.end();
       ++_itr, ++guard)
     {
@@ -121,7 +128,8 @@ namespace hax
 
       if (!inst->is_assemblable())
       {
-        if (rec && (inst->mnemonic() == "RESB" || inst->mnemonic() == "RESW")) {
+        std::cout << "Info: non-assemblable instruction: '" << inst->mnemonic() << "', skipping\n";
+        if (rec && (inst->mnemonic() == "RESB" || inst->mnemonic() == "RESW" || inst->mnemonic() == "USE")) {
           t_records.push_back(rec);
           rec = 0;
         }
@@ -152,8 +160,8 @@ namespace hax
       //~ std::cout << "incremented t_record by length " << inst->length() << ", acc=" << rec->length << "\n";
       rec->instructions.push_back(inst);
     }
-
-    t_records.push_back(rec);
+    if (rec)
+      t_records.push_back(rec);
 
     std::cout << "dumping " << t_records.size() << " text records\n";
 

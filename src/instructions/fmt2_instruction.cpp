@@ -87,7 +87,6 @@ namespace hax
 
     lhs_ = sym_mgr.declare(operands.front());
     rhs_ = sym_mgr.declare(operands.back());
-
   }
 
   void fmt2_instruction::assemble()

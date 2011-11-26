@@ -35,17 +35,16 @@ namespace hax
 	parser* parser::__instance = 0;
 
 	parser::parser()
-  : locctr_(0)
   {
     populate_optable();
 	}
 
 	parser::~parser()
 	{
-    while (!instructions_.empty())
+    while (!pblocks_.empty())
     {
-      delete instructions_.back();
-      instructions_.pop_back();
+      delete pblocks_.back();
+      pblocks_.pop_back();
     }
 	}
 
@@ -66,7 +65,6 @@ namespace hax
 
   void parser::populate_optable()
   {
-
     register_op("ADD",    0x18, format::fmt_three | format::fmt_four);
     register_op("ADDR",   0x90, format::fmt_two);
     register_op("AND",    0x40, format::fmt_three | format::fmt_four);
@@ -199,6 +197,9 @@ namespace hax
     std::cout << "+- \n";
     std::cout << "+- Analyzing entries...\n";
 
+    // begin the default program block
+    switch_to_block("Unnamed");
+
     while (!in.eof())
     //~ for (int i=0; i < 4; ++i)
     {
@@ -303,9 +304,11 @@ namespace hax
       }
 
       inst->assign_line(line);
-      inst->assign_location(locctr_);
+      pblock_->add_instruction(inst);
+      //~ inst->assign_location(locctr_);
       inst->preprocess();
-      locctr_ += inst->length();
+      pblock_->step();
+      //~ locctr_ += inst->length();
 
       std::cout << inst << "\n";
 
@@ -319,12 +322,21 @@ namespace hax
     std::cout << "+- Pass2\n";
     std::cout << "+- Calculating object code...\n";
 
-    for (auto inst : instructions_)
-    {
-      //~ inst->resolve_references();
-      inst->assemble();
-      std::cout << inst << "\n";
+    int idx = 0;
+    for (auto block : pblocks_) {
+      std::cout << "Assembling instructions in program block '" << block->name() << "'\n";
+      block->shift(idx);
+      idx += block->locctr();
     }
+
+    //~ for (auto block : pblocks_) {
+      for (auto inst : instructions_)
+      {
+        //~ inst->resolve_references();
+        inst->assemble();
+        std::cout << inst << "\n";
+      }
+    //~ }
 
     serializer::singleton().process(out_path);
 
@@ -340,13 +352,29 @@ namespace hax
     base_ = in_loc;
   }
 
-  parser::instructions_t const& parser::instructions() const
+  pblock_t* parser::pblock() const
   {
-    return instructions_;
+    return pblock_;
+  }
+  parser::pblocks_t const& parser::pblocks() const
+  {
+    return pblocks_;
   }
 
-  loc_t parser::locctr() const
+  void parser::switch_to_block(std::string in_name)
   {
-    return locctr_;
+    for (auto block : pblocks_)
+      if (block->name() == in_name) {
+        pblock_ = block;
+        return;
+      }
+
+    pblock_ = new program_block(in_name);
+    pblocks_.push_back(pblock_);
+  }
+
+  const parser::instructions_t& parser::instructions() const
+  {
+    return instructions_;
   }
 } // end of namespace

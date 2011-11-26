@@ -23,6 +23,7 @@
 
 #include "hax.hpp"
 #include "instruction.hpp"
+#include "program_block.hpp"
 #include <map>
 #include <list>
 #include <tuple>
@@ -33,9 +34,8 @@ namespace hax
   class serializer;
   class parser {
     public:
-
-    typedef instruction inst_t;
-    typedef std::list<inst_t*> instructions_t;
+    typedef std::list<pblock_t*> pblocks_t;
+    typedef std::list<instruction_t*> instructions_t;
 
     static parser* singleton_ptr();
     static parser& singleton();
@@ -58,11 +58,14 @@ namespace hax
     void set_base(loc_t in_loc);
 
     instructions_t const& instructions() const;
-    loc_t locctr() const;
+    //~ loc_t locctr() const;
+    pblock_t *pblock() const;
+    pblocks_t const& pblocks() const;
+
+    void switch_to_block(std::string in_block = "Unnamed");
 
     protected:
     //~ friend class serializer;
-
 
     private:
     static parser *__instance;
@@ -73,9 +76,13 @@ namespace hax
     void populate_optable();
     void register_op(std::string, opcode_t, format_t);
 
-    inst_t* parse_instruction(std::string const& in_line);
+    instruction_t* parse_instruction(std::string const& in_line);
 
-    loc_t locctr_;
+    //~ loc_t locctr_;
+
+    pblock_t *pblock_; // current program block
+    pblocks_t pblocks_;
+
     optable_t optable_;
     instructions_t instructions_;
     loc_t base_;

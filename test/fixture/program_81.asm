@@ -58,6 +58,6 @@ WLOOP   TD      =X'05'
         RSUB
         USE     CDATA
         LTORG
-*       =C`EOF`
-*       =X`05`
+FOO     BYTE    =C'EOF'
+BAR     BYTE    =X'05'
         END     FIRST

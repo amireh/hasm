@@ -8,6 +8,7 @@ SET(SRCS
     operands/constant.cpp
     operands/expression.cpp
     operands/symbol.cpp
+    program_block.cpp
     symbol_manager.cpp
     instruction.cpp
     instructions/fmt1_instruction.cpp
