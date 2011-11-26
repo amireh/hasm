@@ -34,7 +34,10 @@ namespace hax
 
 		virtual ~serializer();
 
-    void process(string_t const& out);
+    /**
+     * writes the object program in out using the given set of instructions
+     **/
+    void process(std::list<instruction_t*> const& instructions, string_t const& out);
 
     protected:
 

@@ -338,7 +338,7 @@ namespace hax
       }
     //~ }
 
-    serializer::singleton().process(out_path);
+    serializer::singleton().process(instructions_, out_path);
 
     in.close();
   }

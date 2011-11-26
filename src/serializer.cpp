@@ -59,14 +59,14 @@ namespace hax
     if (inst->mnemonic() == "RESW" || inst->mnemonic() == "RESB" || inst->mnemonic() == "USE")
       return true;
     if (rec->length + inst->length() > t_record::maxlen) {
-      std::cout << "IM HERE ! " << rec->length << " + " << inst->length() << "\n";
+      //~ std::cout << "IM HERE ! " << rec->length << " + " << inst->length() << "\n";
       return true;
     }
 
     return false;
   }
 
-  void serializer::process(string_t const& out_path)
+  void serializer::process(std::list<instruction_t*> const& instructions, string_t const& out_path)
   {
     std::ofstream out(out_path);
     if (!out.is_open() || !out.good())
@@ -75,7 +75,7 @@ namespace hax
     }
 
     std::cout << "+- Serializer: writing object program\n";
-    std::list<instruction_t*> const& instructions = parser::singleton().instructions();
+    //~ std::list<instruction_t*> const& instructions = parser::singleton().instructions();
     //~ std::list<instruction_t*> instructions;
     //~ for (auto pblock : parser::singleton().pblocks())
       //~ for (auto inst : pblock->instructions())
@@ -108,45 +108,41 @@ namespace hax
     out << '\n';
     inst = 0;
 
-    int guard = 0;
-    const int start_entry = 0;
-    const int end_entry = instructions.size()-1;
-
     // prepare the T records
     t_record *rec = new t_record();
     rec->address = instructions.front()->location();
     rec->length = 0x00;
-    for (std::list<instruction_t*>::const_iterator _itr = instructions.begin();
-      _itr != instructions.end();
-      ++_itr, ++guard)
+    for (auto inst : instructions)
     {
-      instruction_t *inst = *_itr;
-
-      if (guard == start_entry || guard == end_entry) {
-        continue;
-      }
-
+      // skip assembler directives
       if (!inst->is_assemblable())
       {
-        std::cout << "Info: non-assemblable instruction: '" << inst->mnemonic() << "', skipping\n";
-        if (rec && (inst->mnemonic() == "RESB" || inst->mnemonic() == "RESW" || inst->mnemonic() == "USE")) {
+        if (VERBOSE)
+        std::cout << "Info: skipping non-assemblable directive '" << inst->mnemonic() << "'\n";
+
+        // some assembler directives require us to create a new T record, such as
+        // RESB, RESW, USE
+        if (rec && requires_new_trecord(rec, inst)) {
           t_records.push_back(rec);
           rec = 0;
         }
+
         continue;
       }
 
-      // if the T record's length has been exceeded, or it can't contain
-      // the next instruction, we create a new one
+      // create a new record if there's none (case1), or if the current one's length
+      // has been or will be exceeded (case2)
       if (!rec || requires_new_trecord(rec, inst))
       {
         if (rec)
           t_records.push_back(rec);
+
         rec = new t_record();
         rec->address = inst->location();
         rec->length = 0;
       }
 
+      // does this instruction require an M record for relocation?
       if (inst->is_relocatable()) {
         m_record *mrec = new m_record();
         mrec->location = rec->length + rec->address + 1;
@@ -155,16 +151,23 @@ namespace hax
         m_records.push_back(mrec);
       }
 
+      // step the T record's length by this instruction's length
       rec->length += inst->length();
+
       std::cout << "added inst: " << inst << " to t_record " << t_records.size() + 1 << "\n";
-      //~ std::cout << "incremented t_record by length " << inst->length() << ", acc=" << rec->length << "\n";
+
+      // finally, track this instruction and process the next
       rec->instructions.push_back(inst);
     }
+
+    // track the trailing T record, if any
     if (rec)
       t_records.push_back(rec);
 
-    std::cout << "dumping " << t_records.size() << " text records\n";
+    if (VERBOSE)
+      std::cout << "dumping " << t_records.size() << " text records\n";
 
+    // do actually write the T records now
     for (t_record* rec : t_records)
     {
       out << std::uppercase << std::hex << std::setfill('0');
@@ -184,13 +187,14 @@ namespace hax
       rec->instructions.clear();
     }
 
+    // clean up the T records
     while (!t_records.empty())
     {
       delete t_records.back();
       t_records.pop_back();
     }
 
-    // write M records
+    // write the M records
     for (m_record *rec : m_records)
     {
       out << std::uppercase << std::hex << std::setfill('0');
@@ -198,14 +202,14 @@ namespace hax
       out << '^' << std::setw(2) << rec->length;
       out << '\n';
     }
-
+    // and clean em up
     while (!m_records.empty())
     {
       delete m_records.back();
       m_records.pop_back();
     }
 
-    // TODO: write END record
+    // write the END record
     inst = instructions.back();
     out << 'E';
     out << std::hex << std::setw(6) << std::setfill('0') << inst->objcode(); // object program length
@@ -213,5 +217,7 @@ namespace hax
     inst = 0;
 
     out.close();
+
+    // go play some quake3!! :)
   }
 } // end of namespace
