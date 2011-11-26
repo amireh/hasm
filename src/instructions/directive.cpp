@@ -21,6 +21,7 @@
 #include "directive.hpp"
 #include "parser.hpp"
 #include "symbol_manager.hpp"
+#include "operands/expression.hpp"
 #include <cassert>
 
 namespace hax
@@ -63,12 +64,26 @@ namespace hax
 
     if (mnemonic_ == "BYTE")
     {
-      if (operand_ && operand_->is_constant())
+      // BYTE directive operands need be either immediate constants, or a constant
+      // absolute expression
+      bool valid = false;
+      if (operand_)
       {
-        operand_->evaluate();
-        length_ = 1 * operand_->length();
-      } else
-        throw invalid_operand("BYTE operands can only be constant decimal integers");
+        if (operand_->is_expression()) {
+          operand_->evaluate();
+          valid = static_cast<expression*>(operand_)->is_absolute();
+          //~ valid = true;
+        }
+        else if (operand_->is_constant()) {
+          valid = true;
+        }
+      }
+
+      if (!valid)
+        throw invalid_operand("BYTE operands can only be constant decimal integers or expressions");
+
+      operand_->evaluate();
+      length_ = 1 * operand_->length();
 
     } else if (mnemonic_ == "WORD")
     {
@@ -108,6 +123,7 @@ namespace hax
     } else if (mnemonic_ == "BYTE")
     {
       // BYTE constant values have already been evaluated in preprocess()
+      operand_->evaluate();
       objcode_ = operand_->value();
       objcode_width_ = operand_->length() * 2;
     } else if (mnemonic_ == "END")

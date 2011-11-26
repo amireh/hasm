@@ -19,6 +19,7 @@
  */
 
 #include "operands/expression.hpp"
+#include "operand_factory.hpp"
 #include "symbol_manager.hpp"
 
 namespace hax
@@ -44,6 +45,22 @@ namespace hax
       operator_weights.insert(std::make_pair('+', 1));
       operator_weights.insert(std::make_pair('-', 1));
     }
+
+    to_postfix(token_, postfix_expr_);
+
+    absolute_ = true;
+
+    // populate the list of (un)resolved symbols referenced in this expression
+    operand_factory& op_fact = operand_factory::singleton();
+    std::vector<string_t> tokens = utility::split(postfix_expr_, ' ');
+    for (auto token : tokens)
+    {
+      std::cout << "\tchecking whether " << token << " is a symbol\n";
+      if (op_fact.__is_symbol(token))
+        extrefs_.push_back(symbol_manager::singleton().declare(token));
+    }
+
+    std::cout << "\texpression contains " << extrefs_.size() << " forward references to symbols\n";
 	}
 
 	expression::~expression()
@@ -69,7 +86,49 @@ namespace hax
 
   void expression::evaluate()
   {
-    value_ = evaluate_postfix(to_postfix(token_));
+    // only when all external symbol references are resolved can we evaluate
+    if (!extrefs_.empty())
+    {
+      for (auto sym : extrefs_)
+      {
+        if (!sym->is_evaluated())
+        {
+          std::cout << "\t" << sym << " is still not resolved, can not evaluate\n";
+          return;
+        }
+      }
+
+      // now substitute every term in the expression with the symbol's value
+      std::vector<string_t> tokens = utility::split(postfix_expr_, ' ');
+      for (string_t& token : tokens)
+      {
+         if (operand_factory::singleton().__is_symbol(token))
+         {
+           // find the symbol
+           bool substituted = false;
+           for (auto sym : extrefs_)
+           {
+             if (sym->token() == token) {
+              std::cout << "\tsubstituted external ref term: " << token << " with " << sym->value() << "\n";
+              token = stringify(sym->value());
+              substituted = true;
+            }
+           }
+
+           if (!substituted)
+            throw invalid_expression("");
+         }
+      }
+
+      std::cout << "\tPostfix expression was: " << postfix_expr_ << "\n";
+      postfix_expr_ = utility::join(tokens, ' ');
+      std::cout << "\tPostfix expression now substituted: " << postfix_expr_ << "\n";
+
+      extrefs_.clear();
+    }
+
+    std::cout << "\tall expression symbol references are now resolved, evaluating...\n";
+    value_ = evaluate_postfix(postfix_expr_);
     evaluated_ = true;
   }
 
@@ -80,27 +139,28 @@ namespace hax
   }
 
 
-  string_t expression::to_postfix(string_t const& in)
+  void expression::to_postfix(string_t const& in, string_t &out)
   {
-    absolute_ = true;
+    //~ absolute_ = true;
 
     std::vector<char> operators;
     std::vector<std::string> operands;
 
-    std::string out, operand = "";
-    for (char c : in)
+    string_t operand = "";
+    string_t _in = utility::remove_in_string(in, ' ');
+    for (char c : _in)
     {
-      std::cout << "checking " << c << " in " << in << "\n";
+      //~ std::cout << "checking " << c << " in " << in << "\n";
       if (!is_operator(c))
       {
         operand.push_back(c);
-        //~ out.push_back(c);
         continue;
       }
-
-      operands.push_back(operand);
-      out += operand + " ";
-      operand = "";
+      if (!operand.empty()) {
+        operands.push_back(operand);
+        out += operand + " ";
+        operand = "";
+      }
 
       // handle operators
       if (operators.empty())
@@ -117,6 +177,7 @@ namespace hax
         while (!operators.empty() && operators.back() != '(')
         {
           out.push_back(operators.back());
+          out.push_back(' ');
           operators.pop_back();
         }
 
@@ -136,33 +197,38 @@ namespace hax
       while (!operators.empty() && has_precedence(operators.back(), c))
       {
         out.push_back(operators.back());
+        out.push_back(' ');
         operators.pop_back();
       }
       operators.push_back(c);
     }
 
-    if (!operand.empty())
+    if (!operand.empty()) {
       out += operand + " ";
+      operands.push_back(operand);
+    }
 
     while (!operators.empty())
     {
       out.push_back(operators.back());
+      out.push_back(' ');
       operators.pop_back();
     }
 
-    for (auto _operand : operands)
+    /*for (auto _operand : operands)
     {
       if (_operand[0] < '0' || _operand[0] > '9')
       {
+        std::cout << "\tfound a relative operand: '" << _operand << "'\n";
+
         absolute_ = false;
         break;
       }
-      std::cout << "\tOperand: " << _operand << "\n";
-    }
+    }*/
 
     std::cout << "evaluating " << (absolute_ ? "constant" : "relative") << " postfix expression: " << out << "\n";
     //~ return evalute_postfix(out/*, operands*/);
-    return out;
+    //~ return out;
   }
 
   int expression::evaluate_postfix(std::string in_expr/*, std::vector<std::string> in_operands*/)
@@ -190,21 +256,28 @@ namespace hax
         continue;
       }
 
-      std::cout << "applying op " << c << " on 2-top operands : " << operands.size() << "\n";
+      std::cout << "applying op " << c << " on 2-top operands : " << operands.size() << ":";
 
       assert(operands.size() >= 2);
       string_t tmp = operands.back();
       operands.pop_back();
-      string_t res = "[" + operands.back() + " " + c + " " + tmp + "]";
-      operand* lhs = new operand(tmp);
-      operand* rhs = new operand(operands.back());
-      //~ result_ = apply_operator(c, utility::convertTo<int>(operands.back()), utility::convertTo<int>(tmp));
-      result_ = apply_operator(c, lhs->value(), rhs->value());
+      string_t res = operands.back() + c + tmp;
+
+      std::cout << res << "\n";
+      //~ operand* lhs = operand_factory::singleton().create(operands.back());
+      //~ operand* rhs = operand_factory::singleton().create(tmp);
+      //~ lhs->evaluate();
+      //~ rhs->evaluate();
+      result_ = apply_operator(c, utility::convertTo<int>(operands.back()), utility::convertTo<int>(tmp));
+      //~ result_ = apply_operator(c, lhs->value(), rhs->value());
+      //~ delete lhs;
+      //~ delete rhs;
       operands.pop_back();
-      operands.push_back(res);
+      operands.push_back(stringify(result_));
     }
 
     out = operands.back();
+    std::cout << "resulted of postfix expression: " << in_expr << " = " << result_ << "\n";
 
     return result_;
   }

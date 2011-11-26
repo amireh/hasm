@@ -78,7 +78,7 @@ namespace hax
     if (finder != symbols_.end())
       return finder->second;
 
-    symbol_t *sym = new symbol_t(in_symbol, 0);
+    symbol_t *sym = new symbol_t(in_symbol);
     symbols_.insert(std::make_pair(in_symbol, sym));
     return sym;
   }
@@ -97,11 +97,11 @@ namespace hax
     return entry->second;
   }
 
-  /*bool symbol_manager::is_declared(string_t const& in_name) const
+  bool symbol_manager::is_declared(string_t const& in_name) const
   {
     return symbols_.find(in_name) != symbols_.end();
   }
-
+  /*
   bool symbol_manager::is_defined(string_t const& in_name) const
   {
     symbol_t *const sym = lookup(in_name);

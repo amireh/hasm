@@ -95,7 +95,7 @@ namespace hax
 
   void symbol::evaluate()
   {
-    evaluated_ = true;
+    //~ evaluated_ = true;
   }
 
 } // end of namespace

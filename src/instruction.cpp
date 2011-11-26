@@ -22,8 +22,7 @@
 #include "symbol.hpp"
 #include "parser.hpp"
 #include "symbol_manager.hpp"
-#include "operands/constant.hpp"
-#include "operands/symbol.hpp"
+#include "operand_factory.hpp"
 
 namespace hax
 {
@@ -107,37 +106,17 @@ namespace hax
 
   void instruction::assign_operand(string_t const& in_token)
   {
-    //~ operands_.push_back(in_token);
     operand_str_ = in_token;
 
-    string_t operand_str(in_token);
-
-    if (operand_str.find(",X") != std::string::npos)
+    // is it an indexed operand?
+    if (operand_str_.find(",X") != std::string::npos)
     {
       indexed_ = true;
-      operand_str = operand_str.substr(0, operand_str.size()-2);
+      operand_str_ = operand_str_.substr(0, operand_str_.size()-2);
     }
 
-    // find out what kind of operand it is, there are three options:
-    //  1. a constant, which could be an ASCII or HEX literal, or a decimal number
-    //  2. a symbol
-    //  3. expression
-
-    operand_ = 0;
-    // strip out any leading addressing mode flags (@ or #)
-    if (operand_str[0] == '@' || operand_str[0] == '#')
-      operand_str = operand_str.substr(1, operand_str.size()-1);
-
-    // a constant
-    if (__is_constant(operand_str)) {
-      operand_ = new constant(in_token, this);
-    } else if (__is_expression(operand_str)) {
-      // TODO: implement expression support
-    } else {
-      // we do not own symbol objects, so we grab a reference and release it
-      // when we're destructed
-      operand_ = symbol_manager::singleton().declare(operand_str);
-    }
+    // create the operand object
+    operand_ = operand_factory::singleton().create(operand_str_);
   }
 
   loc_t instruction::location() const
@@ -240,33 +219,6 @@ namespace hax
     return mnemonic_;
   }
 
-  bool instruction::__is_constant(string_t const& token)
-  {
-    return token.find("=C'") != std::string::npos
-        || token.find("=X'") != std::string::npos
-        || utility::is_decimal_nr(token);
-  }
 
-  bool instruction::__is_literal(string_t const& token)
-  {
-    return false;
-  }
-
-  bool instruction::__is_symbol(string_t const& token)
-  {
-    return symbol_manager::singleton().lookup(token) != 0;
-  }
-
-  bool instruction::__is_expression(string_t const& token)
-  {
-    // although we can use C++ TR1 regex here for a more robust solution,
-    // for simplicity, I choose to stupidly scan the token for any operators
-    // as they are only allowed within expressions
-    for (auto c : token)
-      if (utility::is_operator(c))
-        return true;
-
-    return false;
-  }
 
 } // end of namespace

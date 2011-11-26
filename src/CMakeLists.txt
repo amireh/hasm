@@ -4,7 +4,9 @@ SET(SRCS
     parser.cpp
     serializer.cpp
     operand.cpp
+    operand_factory.cpp
     operands/constant.cpp
+    operands/expression.cpp
     operands/symbol.cpp
     symbol_manager.cpp
     instruction.cpp

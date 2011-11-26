@@ -72,6 +72,24 @@ namespace hax { namespace utility {
   }
 
   inline static
+  void ijoin(const std::vector<std::string>& tokens, std::string &out, char delim) {
+    for (std::vector<std::string>::const_iterator token = tokens.begin();
+    token != tokens.end();
+    ++token)
+    {
+      out += *token;
+      out.push_back(delim);
+    }
+  }
+
+  inline static
+  std::string join(const std::vector<std::string>& tokens, char delim) {
+    std::string out;
+    ijoin(tokens, out, delim);
+    return out;
+  }
+
+  inline static
   void itrim(std::string &s) {
     int ws_ctr = 0;
     for (char c : s)

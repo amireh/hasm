@@ -24,9 +24,13 @@
 #include "hax.hpp"
 #include "operand.hpp"
 #include <map>
+#include <list>
 
 namespace hax
 {
+  class symbol;
+  typedef symbol symbol_t;
+
   class expression : public operand {
     public:
     typedef std::map<char, int> weights_t;
@@ -49,9 +53,18 @@ namespace hax
     protected:
     void copy_from(const expression&);
     int evaluate_postfix(string_t in_expr/*, std::vector<string_t> in_operands*/);
-    string_t to_postfix(string_t const& in);
+
+    /**
+     * converts an infix expression into a postfix one
+     **/
+    void to_postfix(string_t const& in, string_t &out);
     bool has_precedence(char op1, char op2);
     int apply_operator(char op, int lhs, int rhs);
+
+    typedef std::list<symbol_t*> extrefs_t;
+    extrefs_t extrefs_;
+
+    string_t postfix_expr_;
 
     bool absolute_;
 

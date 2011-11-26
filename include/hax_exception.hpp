@@ -68,6 +68,13 @@ namespace hax {
 		{ }
 	};
 
+	class invalid_operator : public std::runtime_error {
+	public:
+		inline invalid_operator(const std::string& s)
+		: std::runtime_error(s)
+		{ }
+	};
+
 	class invalid_expression : public std::runtime_error {
 	public:
 		inline invalid_expression(const std::string& s)
