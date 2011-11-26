@@ -19,6 +19,7 @@
  */
 
 #include "operands/constant.hpp"
+#include <cmath>
 
 namespace hax
 {
@@ -100,12 +101,13 @@ namespace hax
 
     // since one byte holds 2 hex digits, we divide the length by two
     if (!is_ascii)
-      length_ /= 2;
+      length_ /= std::ceil(2);
   }
 
   void constant::handle_constant()
   {
     value_ = utility::convertTo<int>(token_);
+    length_ = token_.size();
     //~ std::cout << "converted constant '" << token_ << "' into " << value_ << "\n";
   }
 } // end of namespace

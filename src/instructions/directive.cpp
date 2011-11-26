@@ -63,42 +63,48 @@ namespace hax
     instruction::preprocess();
     length_ = 0;
 
-    if (mnemonic_ == "BYTE")
-    {
-      // BYTE directive operands need be either immediate constants, or a constant
-      // absolute expression
-      bool valid = false;
-      if (operand_)
-      {
-        if (operand_->is_expression()) {
-          operand_->evaluate();
-          valid = static_cast<expression*>(operand_)->is_absolute();
-          //~ valid = true;
-        }
-        else if (operand_->is_constant()) {
-          valid = true;
-        }
-      }
+    assemblable_ = false;
 
-      if (!valid)
-        throw invalid_operand("BYTE operands can only be constant decimal integers or expressions");
+    if (mnemonic_ == "BYTE" || mnemonic_ == "WORD")
+    {
+      // BYTE and WORD directive operands need be either immediate constants, or a constant
+      // absolute expression
+      if (!operand_->is_constant())
+        throw invalid_operand("BYTE and WORD directives operands can only be constant decimal integers");
+
+      bool is_word = mnemonic_ == "WORD";
+      operand_->evaluate();
+      length_ = (is_word ? 3 : 1) * operand_->length();
+
+      assemblable_ = true;
+
+    } else if (mnemonic_ == "RESB" || mnemonic_ == "RESW") {
+
+      //if (!operand_->is_constant() && !operand_->is_symbol())
+      //  throw invalid_operand("RESW and RESB directives operands can only be constant decimal integers");
 
       operand_->evaluate();
-      length_ = 1 * operand_->length();
+      if (operand_->is_expression() && !operand_->is_evaluated())
+        throw invalid_operand("expressions in RESB and RESW operands must be evaluated");
 
-    } else if (mnemonic_ == "WORD")
-    {
-      length_ = 3;
-    } else if (mnemonic_ == "RESB")
-    {
-      assemblable_ = false;
-      length_ = 1 * utility::convertTo<int>(operand_str_);
-    } else if (mnemonic_ == "RESW")
-    {
-      assemblable_ = false;
-      length_ = 3 * utility::convertTo<int>(operand_str_);
-    } else if (mnemonic_ == "BASE")
-      assemblable_ = false;
+      bool is_word = mnemonic_ == "RESW";
+      length_ = (is_word ? 3 : 1) * operand_->value();
+    } else if (mnemonic_ == "BASE") {
+
+    } else if (mnemonic_ == "EQU") {
+      length_ = 0;
+
+      try {
+        operand_->evaluate();
+        label_->_assign_value(operand_->value());
+      } catch (unevaluated_operand& e) {
+        std::cerr << "Warning: " << e.what() << "\n";
+      }
+
+      if (!operand_->is_evaluated())
+        throw invalid_operand("EQU operands must be either constant decimal integers, previously defined symbols, or expressions of previously defined symbols");
+
+    }
   }
 
   loc_t directive::length() const

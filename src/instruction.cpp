@@ -217,19 +217,5 @@ namespace hax
     return mnemonic_;
   }
 
-  void instruction::eval_dependency(symbol_t *dependency)
-  {
-  }
-
-  instruction::dependencies_t const& instruction::dependencies() const
-  {
-    return deps_;
-  }
-
-  bool instruction::is_fulfilled() const
-  {
-    return deps_.empty();
-  }
-
 
 } // end of namespace

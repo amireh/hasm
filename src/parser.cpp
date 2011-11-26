@@ -224,11 +224,18 @@ namespace hax
         utility::itrim(line);
 
         // is it a full comment? if so, discard this entry
-        if (line.front() == '.')
+        if (line.front() == '.' || line.front() == ';')
           continue;
 
         // remove any inline comments
         size_t comment_idx = line.find('.');
+        if (comment_idx != std::string::npos) {
+          line = line.substr(0, comment_idx);
+          // re-trim in case there were spaces before the comment
+          utility::itrim(line);
+        }
+
+        comment_idx = line.find(';');
         if (comment_idx != std::string::npos) {
           line = line.substr(0, comment_idx);
           // re-trim in case there were spaces before the comment

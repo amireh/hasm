@@ -55,12 +55,14 @@ namespace hax
     std::vector<string_t> tokens = utility::split(postfix_expr_, ' ');
     for (auto token : tokens)
     {
-      std::cout << "\tchecking whether " << token << " is a symbol\n";
+      //~ std::cout << "\tchecking whether " << token << " is a symbol\n";
       if (op_fact.__is_symbol(token))
+      {
         extrefs_.push_back(symbol_manager::singleton().declare(token));
+      }
     }
 
-    std::cout << "\texpression contains " << extrefs_.size() << " forward references to symbols\n";
+    //~ std::cout << "\texpression contains " << extrefs_.size() << " forward references to symbols\n";
 	}
 
 	expression::~expression()
@@ -82,6 +84,7 @@ namespace hax
 
   void expression::copy_from(const expression& src)
   {
+    this->absolute_ = src.absolute_;
   }
 
   void expression::evaluate()
@@ -93,7 +96,7 @@ namespace hax
       {
         if (!sym->is_evaluated())
         {
-          std::cout << "\t" << sym << " is still not resolved, can not evaluate\n";
+          //~ std::cout << "\t" << sym << " is still not resolved, can not evaluate\n";
           return;
         }
       }
@@ -109,7 +112,7 @@ namespace hax
            for (auto sym : extrefs_)
            {
              if (sym->token() == token) {
-              std::cout << "\tsubstituted external ref term: " << token << " with " << sym->value() << "\n";
+              //~ std::cout << "\tsubstituted external ref term: " << token << " with " << sym->value() << "\n";
               token = stringify(sym->value());
               substituted = true;
             }
@@ -120,14 +123,14 @@ namespace hax
          }
       }
 
-      std::cout << "\tPostfix expression was: " << postfix_expr_ << "\n";
+      //~ std::cout << "\tPostfix expression was: " << postfix_expr_ << "\n";
       postfix_expr_ = utility::join(tokens, ' ');
-      std::cout << "\tPostfix expression now substituted: " << postfix_expr_ << "\n";
+      //~ std::cout << "\tPostfix expression now substituted: " << postfix_expr_ << "\n";
 
       extrefs_.clear();
     }
 
-    std::cout << "\tall expression symbol references are now resolved, evaluating...\n";
+    //~ std::cout << "\tall expression symbol references are now resolved, evaluating...\n";
     value_ = evaluate_postfix(postfix_expr_);
     evaluated_ = true;
   }
@@ -226,7 +229,7 @@ namespace hax
       }
     }*/
 
-    std::cout << "evaluating " << (absolute_ ? "constant" : "relative") << " postfix expression: " << out << "\n";
+    //~ std::cout << "evaluating " << (absolute_ ? "constant" : "relative") << " postfix expression: " << out << "\n";
     //~ return evalute_postfix(out/*, operands*/);
     //~ return out;
   }
@@ -256,14 +259,14 @@ namespace hax
         continue;
       }
 
-      std::cout << "applying op " << c << " on 2-top operands : " << operands.size() << ":";
+      //~ std::cout << "applying op " << c << " on 2-top operands : " << operands.size() << ":";
 
       assert(operands.size() >= 2);
       string_t tmp = operands.back();
       operands.pop_back();
       string_t res = operands.back() + c + tmp;
 
-      std::cout << res << "\n";
+      //~ std::cout << res << "\n";
       //~ operand* lhs = operand_factory::singleton().create(operands.back());
       //~ operand* rhs = operand_factory::singleton().create(tmp);
       //~ lhs->evaluate();
@@ -277,7 +280,7 @@ namespace hax
     }
 
     out = operands.back();
-    std::cout << "resulted of postfix expression: " << in_expr << " = " << result_ << "\n";
+    //~ std::cout << "resulted of postfix expression: " << in_expr << " = " << result_ << "\n";
 
     return result_;
   }

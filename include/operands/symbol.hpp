@@ -23,6 +23,7 @@
 
 #include "hax.hpp"
 #include "operand.hpp"
+#include <list>
 
 namespace hax
 {
@@ -40,16 +41,10 @@ namespace hax
 
     void assign_address(loc_t in_address);
 
-    /**
-     * instructions that are dependant on this symbol's value can declare
-     * that dependency relationship here.
-     *
-     * once this symbol is evaluated, it will inform all dependants of its evaluation
-     * by calling instruction::eval_dependency() so they can, in turn, evaluate.
-     **/
-    //~ void declare_dependency(instruction_t *dependant);
+    virtual uint32_t value() const;
 
     protected:
+
     loc_t address_;
     //~ string_t label_;
 

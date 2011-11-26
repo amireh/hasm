@@ -64,8 +64,6 @@ namespace hax
     if (__is_constant(operand_str)) {
       _operand = new constant(in_token);
     } else if (__is_expression(operand_str)) {
-      // TODO: implement expression support
-      std::cout << "Created an expression: " << in_token << "\n";
       _operand = new expression(in_token);
     } else {
       // we do not own symbol objects, so we grab a reference and release it
@@ -92,11 +90,18 @@ namespace hax
     if (token.empty())
       return false;
 
-    // symbols can not begin with a number
+    // symbols can not begin with a number and must not contain any operator chars
     char c = token[0];
-    return
-      !(c >= '0' && c <= '9') &&
-      symbol_manager::singleton().lookup(token) != 0;
+    if((c >= '0' && c <= '9') ||
+      token.find('-') != std::string::npos ||
+      token.find('+') != std::string::npos ||
+      token.find('/') != std::string::npos ||
+      token.find('*') != std::string::npos ||
+      token.find('(') != std::string::npos ||
+      token.find(')') != std::string::npos)
+      return false;
+
+    return true;
   }
 
   bool operand_factory::__is_expression(string_t const& token)

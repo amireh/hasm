@@ -65,43 +65,30 @@ namespace hax
   std::ostream& symbol::to_stream(std::ostream& in) const
   {
     in
-      << (evaluated_ ? "defined" : "undefined")
       << "[symbol: '" << token_ << "' @ "
-      << std::hex << std::setw(3) << std::setfill('0') << value();
+      << std::hex << std::setw(3) << std::setfill('0') << value_
+      << " => "
+      << (evaluated_ ? "defined" : "undefined");
 
     in << "]";
 
     return in;
   }
 
-  //~ void symbol::set_address(loc_t in_addr)
-  //~ {
-    //~ if (evaluated_)
-      //~ throw symbol_redifinition(std::string("attempting to re-define symbol ") + this->dump());
-//~
-    //~ address_ = in_addr;
-    //~ evaluated_ = true;
-  //~ }
-
-  //~ string_t const& symbol::label() const
-  //~ {
-    //~ return label_;
-  //~ }
-
-  //~ void symbol::assign_instruction(instruction_t const* in_inst)
-  //~ {
-    //~ operand::assign_instruction(in_inst);
-    //~ evaluate();
-  //~ }
-
   void symbol::evaluate()
   {
-    //~ evaluated_ = true;
   }
 
   void symbol::assign_address(loc_t in_address)
   {
     address_ = in_address;
+  }
+
+  uint32_t symbol::value() const {
+    if (!evaluated_)
+      return address_;
+
+    return value_;
   }
 
 } // end of namespace

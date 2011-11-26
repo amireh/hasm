@@ -63,8 +63,6 @@ namespace hax
 
     void dump(std::ostream& out) const;
 
-    void resolve_dependencies();
-
     protected:
     typedef std::map<string_t, symbol_t*> symbols_t;
 

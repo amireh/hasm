@@ -20,6 +20,7 @@
 
 #include "symbol_manager.hpp"
 #include "instruction.hpp"
+#include "parser.hpp"
 #include <fstream>
 #include <ostream>
 #include <exception>
@@ -85,7 +86,7 @@ namespace hax
 
   void symbol_manager::define(symbol_t *in_symbol, loc_t in_loc)
   {
-    in_symbol->_assign_value(in_loc);
+    in_symbol->assign_address(in_loc);
   }
 
   symbol_t *const symbol_manager::lookup(string_t const& in_label) const
@@ -126,18 +127,4 @@ namespace hax
     }
   }
 
-  void symbol_manager::resolve_dependencies()
-  {
-    /* # construct a list with all instructions that have dependencies
-     * # loop in list
-     *  # loop in all dependencies:
-     *    # if dependency has no dependencies, evaluate and:
-     *    #   loop through all dependants and remove dependency
-     *    #   if dependant has no more dependencies, evaluate
-     *    # else
-     *    #   leave it and continue loop
-     *  # if no dependencies left, flag this instruction as done
-     *  # fetch next instruction with dependencies
-     **/
-  }
 } // end of namespace

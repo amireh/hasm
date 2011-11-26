@@ -112,18 +112,6 @@ namespace hax
     bool is_relocatable() const;
     string_t const& mnemonic() const;
 
-    typedef std::list<symbol_t*> dependencies_t;
-
-    /**
-     * once a referenced symbol's value is evaluated, this method will be called
-     * so the instruction can proceed with assembling
-     *
-     * dependencies are declared internally when an instruction is preprocessed
-     **/
-    void eval_dependency(symbol_t *dependency);
-
-    dependencies_t const& dependencies() const;
-
     /**
      * are there no dependencies left for this instruction's object code to be
      * assembled?
@@ -169,8 +157,6 @@ namespace hax
     // some assembler directives like RESB and RESW do not construct object code
     // this flag is set to false in such instructions
     bool assemblable_;
-
-    dependencies_t deps_;
 
     private:
 	};
