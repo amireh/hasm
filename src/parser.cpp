@@ -110,6 +110,8 @@ namespace hax
     register_op("START",  0x00, format::fmt_directive);
     register_op("CSECT",  0x00, format::fmt_directive);
     register_op("END",    0x00, format::fmt_directive);
+    register_op("EXTREF", 0x00, format::fmt_directive); // TODO: implement
+    register_op("EXTDEF", 0x00, format::fmt_directive); // TODO: implement
     register_op("USE",    0x00, format::fmt_directive);
     register_op("CLEAR",  0x00, format::fmt_directive);
     register_op("EQU",    0x00, format::fmt_directive);
@@ -117,10 +119,10 @@ namespace hax
     register_op("RESB",   0x00, format::fmt_directive);
     register_op("BYTE",   0x00, format::fmt_directive);
     register_op("WORD",   0x00, format::fmt_directive);
-    register_op("ORG",    0x00, format::fmt_directive);
-    register_op("LTORG",  0x00, format::fmt_directive);
-    register_op("BASE",  0x00, format::fmt_directive);
-    register_op("*",      0x00, format::fmt_directive);
+    register_op("ORG",    0x00, format::fmt_directive); // TODO: implement
+    register_op("LTORG",  0x00, format::fmt_directive); // TODO: implement
+    register_op("BASE",   0x00, format::fmt_directive);
+    register_op("*",      0x00, format::fmt_directive); // TODO: implement
 
     std::cout << "+- Registered " << optable_.size() << " SIC/XE operations & assembler directives.\n";
   }

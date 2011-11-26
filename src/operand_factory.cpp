@@ -76,8 +76,8 @@ namespace hax
 
   bool operand_factory::__is_constant(string_t const& token)
   {
-    return token.find("=C'") != std::string::npos
-        || token.find("=X'") != std::string::npos
+    return token.find("C'") < 2
+        || token.find("X'") < 2
         || token[0] == '*'
         || utility::is_decimal_nr(token);
   }

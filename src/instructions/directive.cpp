@@ -69,8 +69,8 @@ namespace hax
     {
       // BYTE and WORD directive operands need be either immediate constants, or a constant
       // absolute expression
-      if (!operand_->is_constant())
-        throw invalid_operand("BYTE and WORD directives operands can only be constant decimal integers");
+      if (!operand_->is_constant() && !operand_->is_expression())
+        throw invalid_operand(mnemonic_ + " directives operands can only be constant decimal integers, source: " + line_);
 
       bool is_word = mnemonic_ == "WORD";
       operand_->evaluate();
@@ -85,7 +85,7 @@ namespace hax
 
       operand_->evaluate();
       if (operand_->is_expression() && !operand_->is_evaluated())
-        throw invalid_operand("expressions in RESB and RESW operands must be evaluated");
+        throw invalid_operand("expressions in RESB and RESW operands must be evaluated, source: " + line_);
 
       bool is_word = mnemonic_ == "RESW";
       length_ = (is_word ? 3 : 1) * operand_->value();

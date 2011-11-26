@@ -39,6 +39,9 @@ namespace hax
     } else if (in_token.find("=X'") != std::string::npos) {
       handler_ = &constant::handle_hex_literal;
       token_ = token_.substr(3, token_.size()-4);
+    } else if (in_token.find("X'") != std::string::npos) {
+      handler_ = &constant::handle_hex_literal;
+      token_ = token_.substr(2, token_.size()-3);
 
     } else if (in_token[0] == '*') {
       handler_ = &constant::handle_current_loc;
