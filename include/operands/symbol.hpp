@@ -47,7 +47,7 @@ namespace hax
      * once this symbol is evaluated, it will inform all dependants of its evaluation
      * by calling instruction::eval_dependency() so they can, in turn, evaluate.
      **/
-    void declare_dependency(instruction_t *dependant);
+    //~ void declare_dependency(instruction_t *dependant);
 
     protected:
     loc_t address_;

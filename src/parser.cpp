@@ -314,7 +314,7 @@ namespace hax
 
     for (auto inst : instructions_)
     {
-      inst->resolve_references();
+      //~ inst->resolve_references();
       inst->assemble();
       std::cout << inst << "\n";
     }

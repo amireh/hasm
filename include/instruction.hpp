@@ -25,6 +25,7 @@
 #include "loggable.hpp"
 #include "operand.hpp"
 #include <vector>
+#include <list>
 
 namespace hax
 {
@@ -121,7 +122,7 @@ namespace hax
      **/
     void eval_dependency(symbol_t *dependency);
 
-    dependencies_t& dependencies() const;
+    dependencies_t const& dependencies() const;
 
     /**
      * are there no dependencies left for this instruction's object code to be

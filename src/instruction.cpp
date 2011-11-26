@@ -221,7 +221,7 @@ namespace hax
   {
   }
 
-  dependencies_t& instruction::dependencies() const
+  instruction::dependencies_t const& instruction::dependencies() const
   {
     return deps_;
   }

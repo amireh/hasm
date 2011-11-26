@@ -125,4 +125,19 @@ namespace hax
       << std::hex << symbol->value() << "\n";
     }
   }
+
+  void symbol_manager::resolve_dependencies()
+  {
+    /* # construct a list with all instructions that have dependencies
+     * # loop in list
+     *  # loop in all dependencies:
+     *    # if dependency has no dependencies, evaluate and:
+     *    #   loop through all dependants and remove dependency
+     *    #   if dependant has no more dependencies, evaluate
+     *    # else
+     *    #   leave it and continue loop
+     *  # if no dependencies left, flag this instruction as done
+     *  # fetch next instruction with dependencies
+     **/
+  }
 } // end of namespace
