@@ -79,7 +79,8 @@ namespace hax
 
     /**
      * this routine gives a chance for certain format objects to "bootstrap"
-     * before any attempt to resolve operands or calculate object code is made
+     * before any attempt to resolve operands or calculate object code is made,
+     * in some cases, forward-references of symbol dependencies are declared here
      *
      * @note
      * this method will be called AFTER the label, opcode, and all operands are assigned
@@ -91,10 +92,7 @@ namespace hax
     void assign_label(symbol_t* const);
     virtual void assign_operand(string_t const&);
 
-    void resolve_references();
-
     void assign_line(string_t const&);
-
 
     //int nr_tokens() const;
 
@@ -105,12 +103,6 @@ namespace hax
 
     symbol_t const* const label() const;
 
-    /**
-     * are there no dependencies left for this symbol_manager's object code to be
-     * computed?
-     **/
-    bool is_fulfilled() const;
-
     virtual string_t dump() const;
 
     uint32_t objcode() const;
@@ -118,6 +110,24 @@ namespace hax
     bool is_assemblable() const;
     bool is_relocatable() const;
     string_t const& mnemonic() const;
+
+    typedef std::list<symbol_t*> dependencies_t;
+
+    /**
+     * once a referenced symbol's value is evaluated, this method will be called
+     * so the instruction can proceed with assembling
+     *
+     * dependencies are declared internally when an instruction is preprocessed
+     **/
+    void eval_dependency(symbol_t *dependency);
+
+    dependencies_t& dependencies() const;
+
+    /**
+     * are there no dependencies left for this instruction's object code to be
+     * assembled?
+     **/
+    bool is_fulfilled() const;
 
     protected:
     typedef std::vector<string_t> operands_t;
@@ -158,6 +168,8 @@ namespace hax
     // some assembler directives like RESB and RESW do not construct object code
     // this flag is set to false in such instructions
     bool assemblable_;
+
+    dependencies_t deps_;
 
     private:
 	};

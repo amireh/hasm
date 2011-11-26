@@ -126,6 +126,8 @@ namespace hax
 
   void instruction::preprocess()
   {
+    if (label_)
+      label_->assign_address(location());
   }
 
   std::ostream& instruction::to_stream(std::ostream& out) const
@@ -185,10 +187,6 @@ namespace hax
     return out.str();
   }
 
-  void instruction::resolve_references()
-  {
-  }
-
   void instruction::assign_line(string_t const& in_entry)
   {
     line_ = in_entry;
@@ -219,6 +217,19 @@ namespace hax
     return mnemonic_;
   }
 
+  void instruction::eval_dependency(symbol_t *dependency)
+  {
+  }
+
+  dependencies_t& instruction::dependencies() const
+  {
+    return deps_;
+  }
+
+  bool instruction::is_fulfilled() const
+  {
+    return deps_.empty();
+  }
 
 
 } // end of namespace

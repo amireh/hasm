@@ -38,8 +38,19 @@ namespace hax
     //~ string_t const& label() const;
     virtual void evaluate();
 
-    protected:
+    void assign_address(loc_t in_address);
 
+    /**
+     * instructions that are dependant on this symbol's value can declare
+     * that dependency relationship here.
+     *
+     * once this symbol is evaluated, it will inform all dependants of its evaluation
+     * by calling instruction::eval_dependency() so they can, in turn, evaluate.
+     **/
+    void declare_dependency(instruction_t *dependant);
+
+    protected:
+    loc_t address_;
     //~ string_t label_;
 
     void copy_from(const symbol&);

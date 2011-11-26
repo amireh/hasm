@@ -60,6 +60,7 @@ namespace hax
 
   void directive::preprocess()
   {
+    instruction::preprocess();
     length_ = 0;
 
     if (mnemonic_ == "BYTE")

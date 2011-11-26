@@ -60,6 +60,8 @@ namespace hax
 
   void fmt3_instruction::preprocess()
   {
+    instruction::preprocess();
+
     length_ = 3;
 
     if (mnemonic_ == "RSUB")

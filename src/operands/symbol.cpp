@@ -28,7 +28,8 @@ namespace hax
   using utility::stringify;
 
 	symbol::symbol(string_t const& in_label)
-  : operand(in_label)
+  : operand(in_label),
+    address_(0x0)
   {
 
     type_ = t_symbol;
@@ -57,7 +58,7 @@ namespace hax
   void symbol::copy_from(const symbol& src)
   {
     //~ this->label_ = src.label_;
-    //~ this->address_ = src.address_;
+    this->address_ = src.address_;
     //~ this->evaluated_ = src.evaluated_;
   }
 
@@ -96,6 +97,11 @@ namespace hax
   void symbol::evaluate()
   {
     //~ evaluated_ = true;
+  }
+
+  void symbol::assign_address(loc_t in_address)
+  {
+    address_ = in_address;
   }
 
 } // end of namespace
