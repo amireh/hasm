@@ -46,6 +46,7 @@ namespace hax
 
     bool is_symbol() const;
     bool is_constant() const;
+    bool is_literal() const;
     bool is_expression() const;
 
     protected:
@@ -56,7 +57,8 @@ namespace hax
       t_undefined,
       t_symbol,
       t_constant,
-      t_expression
+      t_expression,
+      t_literal
     };
 
     string_t token_;

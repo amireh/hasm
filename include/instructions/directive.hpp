@@ -29,7 +29,7 @@ namespace hax
     public:
 
     directive() = delete;
-		explicit directive(opcode_t, string_t const& in_mnemonic);
+		explicit directive(opcode_t, string_t const& in_mnemonic, pblock_t* block);
     directive(const directive& src);
 		directive& operator=(const directive& rhs);
 		virtual ~directive();

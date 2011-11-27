@@ -42,7 +42,8 @@ namespace hax
     fmt_two = 0x02,
     fmt_three = 0x03,
     fmt_four = 0x04,
-    fmt_directive = 0x05
+    fmt_directive = 0x05,
+    fmt_literal = 0x06
   } format;
 
   class instruction : public loggable {
@@ -80,7 +81,7 @@ namespace hax
     typedef addressing_mode addressing_mode_t;
 
     instruction() = delete;
-		explicit instruction(opcode_t, const string_t&, pblock_t* block=0);
+		explicit instruction(opcode_t, const string_t&, pblock_t* block);
     instruction(const instruction& src);
 		instruction& operator=(const instruction& rhs);
 		virtual ~instruction();
@@ -88,19 +89,12 @@ namespace hax
     opcode_t opcode() const;
     loc_t location() const;
 
+    program_block* block() const;
+
     /**
      * the length of an instruction is calculated based on its format
      **/
     virtual loc_t length() const=0;
-
-    virtual void assemble()=0;
-
-    /**
-     * an instruction is valid when:
-     *  1 - the opcode exists is registered in the optable
-     *  2 - all operands registered are valid and match the format specifications
-     **/
-    virtual bool is_valid() const=0;
 
     /**
      * this routine gives a chance for certain format objects to "bootstrap"
@@ -112,6 +106,8 @@ namespace hax
      **/
     virtual void preprocess();
 
+    virtual void assemble()=0;
+
     /**
      * this will be called *after* this instruction has been assembled, a major
      * function that's carried out here is identifying relocatability and constructing
@@ -119,28 +115,42 @@ namespace hax
      **/
     virtual void postprocess();
 
-    //void register_token(string_t const&);
+    /**
+     * the location is assigned by the program block this instruction belongs to
+     **/
     void assign_location(loc_t);
-    void assign_label(symbol_t* const);
-    virtual void assign_operand(string_t const&);
-    void assign_line(string_t const&);
 
-    //int nr_tokens() const;
+    /**
+     * instructions can optionally be labelled by a symbol, when a symbol is
+     * assigned as an instruction's label, the symbol's address will be reset
+     * to this instruction's address
+     **/
+    void assign_label(symbol_t* const);
+
+    /**
+     * in_token will be passed to the operand_factory to parse its type and
+     * create the correct operand object
+     *
+     * an instruction can have _at most_ one operand
+     **/
+    virtual void assign_operand(string_t const& in_token);
+    virtual void assign_operand(operand* in_operand);
+
+    /**
+     * the source line of this instruction (used for printing purposes)
+     **/
+    void assign_line(string_t const&);
 
     /**
      * is this instruction labelled?
      **/
     bool has_label() const;
-
     symbol_t const* const label() const;
-
-    virtual string_t dump() const;
-
-    uint32_t objcode() const;
-
+    objcode_t objcode() const;
     bool is_assemblable() const;
     bool is_relocatable() const;
     string_t const& mnemonic() const;
+    operand* get_operand() const;
 
     /**
      * are there no dependencies left for this instruction's object code to be
@@ -148,44 +158,62 @@ namespace hax
      **/
     bool is_fulfilled() const;
 
+    /**
+     * returns all the required relocation records for this instruction
+     **/
     reloc_records_t& reloc_records();
 
-    protected:
-    typedef std::vector<string_t> operands_t;
+    virtual string_t dump() const;
 
+    protected:
     virtual void copy_from(const instruction&);
 
     virtual std::ostream& to_stream(std::ostream&) const;
+
+    /**
+     * determines whether this instruction requires relocation, and if it does
+     * then it creates the necessary reloc_record objects which will be later
+     * used by the serializer to create M records
+     */
     void construct_relocation_records();
+
     reloc_record_t* construct_relocation_record(symbol_t* sym);
 
-    /**
-     * the opcode is automatically set when the instruction is created by looking
+    /* the opcode is automatically set when the instruction is created by looking
      * up the mnemonic code in the master optable
-     **/
+     */
     opcode_t opcode_;
 
-    /**
-     * the location is specified by the assembler in pass 2 and is required for
-     * this instruction object to calculate its object code
-     **/
+    /* the location is assigned in pass 1 and critical required for assembling */
     loc_t location_;
-    loc_t length_;
+
+    /* the length in bytes of this instruction's assembly output */
+    size_t length_;
 
     symbol_t* label_;
     pblock_t* pblock_;
 
-    //~ operands_t operands_;
     operand_t *operand_;
-    string_t operand_str_;
 
     format_t format_;
 
-    addressing_mode_t addr_mode_;
+    /* see instruction::addressing_mode above */
+    uint32_t addr_mode_;
+
+    /* the source line from which this instruction was created,
+     * used only for printing purposes */
     string_t line_;
-    uint32_t objcode_;
+
+    /* this is the value that will contain the output of the assembly */
+    objcode_t objcode_;
+
+    /* indexed instructions have their x bit set to 1 in the targeting flags */
     bool indexed_;
+
+    /* the literal representation of the opcode */
     string_t mnemonic_;
+
+    /** used only for printing purposes */
     uint8_t objcode_width_;
 
     // some assembler directives like RESB and RESW do not construct object code

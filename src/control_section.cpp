@@ -26,7 +26,9 @@ namespace hax
   control_section::control_section(string_t in_name)
   : name_(in_name),
     pblock_(new program_block("Unnamed", this)),
-    symmgr_(new symbol_manager())
+    symmgr_(new symbol_manager()),
+    starting_addr_(0x0),
+    starting_addr_set_(false)
   {
   }
 
@@ -45,6 +47,8 @@ namespace hax
     }
 
     delete symmgr_;
+    symmgr_ = 0;
+    pblock_ = 0;
   }
 
   std::ostream&
@@ -110,6 +114,8 @@ namespace hax
   void
   control_section::assemble()
   {
+    symmgr_->dump_literal_pool();
+
     int idx = 0;
     for (auto block : pblocks_) {
       std::cout << "Assigning address to program block '" << block->name() << "'\n";
@@ -119,7 +125,6 @@ namespace hax
 
     for (auto inst : instructions_)
     {
-      //~ inst->resolve_references();
       inst->assemble();
       //~ std::cout << inst << "\n";
     }
@@ -136,4 +141,22 @@ namespace hax
     serializer::singleton().process(this, out_path);
   }
 
+  bool
+  control_section::has_starting_address() const
+  {
+    return starting_addr_set_;
+  }
+
+  loc_t
+  control_section::starting_address()
+  {
+    return starting_addr_;
+  }
+
+  void
+  control_section::assign_starting_address(loc_t in_addr)
+  {
+    starting_addr_ = in_addr;
+    starting_addr_set_ = true;
+  }
 } // end of namespace hax

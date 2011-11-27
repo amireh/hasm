@@ -21,6 +21,7 @@
 #include "symbol_manager.hpp"
 #include "instruction.hpp"
 #include "parser.hpp"
+#include "instructions/directive.hpp"
 #include <fstream>
 #include <ostream>
 #include <exception>
@@ -52,6 +53,7 @@ namespace hax
     define(declare("PC"), 0x08, true);
     define(declare("SW"), 0x09, true);
 
+    define(declare("*"), 0x0, false);
 	}
 
 	symbol_manager::~symbol_manager()
@@ -144,5 +146,63 @@ namespace hax
       //~ delete sym;
       symbols_.erase(in_sym);
     }
+  }
+
+  instruction* symbol_manager::declare_literal(string_t const& in_value, operand* in_dep)
+  {
+    // if this literal has been declared in this pool before, do nothing
+    literals_t::iterator finder = literals_.find(in_value);
+    if (finder != literals_.end()) {
+      finder->second->add_dependency(in_dep);
+      return finder->second;
+    }
+
+
+    literal* lit = new literal(in_value);
+    lit->add_dependency(in_dep);
+    //literal->assign_label(lookup("*"));
+    //~ operand* oper = new constant(in_value);
+    //~ symbol* oper = new symbol(in_value);
+    //~ literal->assign_operand(oper);
+    literals_.insert(std::make_pair(in_value, lit));
+
+    std::cout << "registered literal with value: " << in_value << "\n";
+    return lit;
+  }
+
+  void symbol_manager::dump_literal_pool()
+  {
+    program_block* block = parser::singleton().sect()->block();
+
+    std::cout << "-- Dumping the literal pool \n";
+    for (auto entry : literals_)
+    {
+      literal* lit = entry.second;
+      if (lit->is_assembled())
+        continue;
+
+      block->add_instruction(lit);
+      lit->assign_operand(entry.first);
+      lit->preprocess();
+      std::cout << "Literal : " << lit << "\n";
+      lit->assemble();
+      //~ block->step();
+
+    }
+
+    //~ literals_.clear();
+  }
+
+  instruction* symbol_manager::lookup_literal(string_t const& in_value)
+  {
+    literals_t::iterator finder = literals_.find(in_value);
+    if (finder != literals_.end())
+      return finder->second;
+
+    std::cout << "\tCurrent literal table:\n";
+    for (auto entry : literals_)
+      std::cout << "\t" << entry.first << " => " << entry.second << "\n";
+
+    throw invalid_operand("unable to find literal with value: " + in_value);
   }
 } // end of namespace

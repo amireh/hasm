@@ -31,26 +31,48 @@ namespace hax
   {
     type_ = t_constant;
 
+    // ASCII literals, format: =C'characters'
     if (in_token.find("=C'") != std::string::npos)
     {
-      handler_ = &constant::handle_ascii_literal;
-      token_ = token_.substr(3, token_.size()-4);
+      handler_ = &constant::handle_literal;
+      type_ = t_literal;
+    }
+    // Hexadecimal literals, format: =X'digits'
+    else if (in_token.find("=X'") != std::string::npos) {
+      handler_ = &constant::handle_literal;
+      type_ = t_literal;
+    }
 
-    } else if (in_token.find("=X'") != std::string::npos) {
-      handler_ = &constant::handle_hex_literal;
-      token_ = token_.substr(3, token_.size()-4);
-    } else if (in_token.find("X'") != std::string::npos) {
-      handler_ = &constant::handle_hex_literal;
-      token_ = token_.substr(2, token_.size()-3);
+    // Hexadecimal constants, format: X'hexdigits'
+    else if (in_token.find("X'") != std::string::npos) {
+      handler_ = &constant::handle_hex_constant;
+      stripped_ = token_.substr(2, token_.size()-3);
 
-    } else if (in_token[0] == '*') {
+    }
+    // ASCII constants, format: C'characters'
+    else if (in_token.find("C'") != std::string::npos) {
+      handler_ = &constant::handle_ascii_constant;
+      stripped_ = token_.substr(2, token_.size()-3);
+
+    }
+    // Special operator *, denotes the current value of the location counter
+    else if (in_token[0] == '*') {
       handler_ = &constant::handle_current_loc;
-    } else {
+    }
+    // Decimal constant
+    else {
+
       if (token_[0] == '#')
         token_ = token_.substr(1, token_.size()-1);
+
       handler_ = &constant::handle_constant;
     }
 
+    // if the operand is a literal, declare the dependency
+    if (is_literal())
+    {
+      parser::singleton().sect()->symmgr()->declare_literal(token_, this);
+    }
 	}
 
 	constant::~constant()
@@ -81,19 +103,12 @@ namespace hax
     evaluated_ = true;
   }
 
-  void constant::handle_ascii_literal()
+  void constant::handle_literal()
   {
-    handle_literal(true);
-  }
+    instruction* lit = parser::singleton().sect()->symmgr()->lookup_literal(token_);
+    value_ = lit->location();
 
-  void constant::handle_hex_literal()
-  {
-    handle_literal(false);
-  }
-
-  void constant::handle_literal(bool is_ascii)
-  {
-    std::stringstream hex_repr;
+    /*std::stringstream hex_repr;
     hex_repr << std::hex;
     for (auto c : token_)
       if (is_ascii)
@@ -107,7 +122,7 @@ namespace hax
 
     // since one byte holds 2 hex digits, we divide the length by two
     if (!is_ascii)
-      length_ /= std::ceil(2);
+      length_ /= std::ceil(2);*/
   }
 
   void constant::handle_constant()
@@ -115,6 +130,35 @@ namespace hax
     value_ = utility::convertTo<int>(token_);
     length_ = token_.size();
     //~ std::cout << "converted constant '" << token_ << "' into " << value_ << "\n";
+  }
+
+  void constant::handle_ascii_constant()
+  {
+    handle_hex_or_ascii_constant(true);
+  }
+
+  void constant::handle_hex_constant()
+  {
+    handle_hex_or_ascii_constant(false);
+  }
+
+  void constant::handle_hex_or_ascii_constant(bool is_ascii)
+  {
+    std::stringstream hex_repr;
+    hex_repr << std::hex;
+    for (auto c : stripped_)
+      if (is_ascii)
+        hex_repr << (int)c;
+      else
+        hex_repr << c;
+
+    hex_repr >> value_;
+
+    length_ = stripped_.size();
+
+    // since one byte holds 2 hex digits, we divide the length by two
+    if (!is_ascii)
+      length_ /= std::ceil(2);
   }
 
   void constant::handle_current_loc()

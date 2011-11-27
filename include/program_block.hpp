@@ -47,6 +47,7 @@ namespace hax
     void step();
 
     void shift(int in_amount);
+    size_t length() const;
 
     /**
      * registers the given instruction with this program block and assigns

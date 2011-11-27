@@ -33,6 +33,7 @@ namespace hax {
 
   typedef uint8_t opcode_t;
   typedef uint16_t loc_t;
+  typedef uint32_t objcode_t;
   typedef std::string string_t;
   typedef char format_t;
   typedef std::tuple<opcode_t, format_t> opcode_fmt_t;

@@ -84,7 +84,6 @@ namespace hax
 
     switch(in_operand[0]) {
       case '#':
-      case '=':
         addr_mode_ = addressing_mode::immediate;
         break;
       case '@':

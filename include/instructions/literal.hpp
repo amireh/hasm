@@ -18,30 +18,40 @@
  *  along with HASM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef h_fmt1_instruction_h
-#define h_fmt1_instruction_h
+#ifndef h_literal_h
+#define h_literal_h
 
 #include "instruction.hpp"
+#include "operand.hpp"
 
 namespace hax
 {
-  class fmt1_instruction : public instruction {
+  class literal : public instruction {
     public:
+    typedef std::list<operand*> deps_t;
 
-    fmt1_instruction() = delete;
-		explicit fmt1_instruction(opcode_t, const string_t&, pblock_t* block);
-    fmt1_instruction(const fmt1_instruction& src);
-		fmt1_instruction& operator=(const fmt1_instruction& rhs);
-		virtual ~fmt1_instruction();
+    literal() = delete;
+		explicit literal(string_t const& in_value);
+    literal(const literal& src);
+		literal& operator=(const literal& rhs);
+		virtual ~literal();
 
     virtual loc_t length() const;
+    virtual void preprocess();
     virtual void assemble();
-    virtual bool is_valid() const;
+
+    void add_dependency(operand*);
+    deps_t& dependencies();
+
+    bool is_assembled() const;
 
     protected:
-    void copy_from(const fmt1_instruction&);
+    deps_t deps_;
+    bool is_ascii_;
+    string_t stripped_;
+    bool assembled_;
 
-    private:
+    void copy_from(const literal&);
 	};
 } // end of namespace
-#endif // h_fmt1_instruction_h
+#endif // h_literal_h

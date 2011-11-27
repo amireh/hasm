@@ -22,6 +22,8 @@
 #define h_symbol_manager_h
 
 #include "hax.hpp"
+#include "instruction.hpp"
+#include "instructions/literal.hpp"
 #include "operands/symbol.hpp"
 #include <map>
 
@@ -71,7 +73,13 @@ namespace hax
 
     void __undefine(string_t const& in_sym);
 
+    instruction* declare_literal(string_t const& in_value, operand* in_dependency);
+    instruction* lookup_literal(string_t const& in_value);
+    void dump_literal_pool();
+
     protected:
+    typedef std::map<string_t, literal*> literals_t;
+    literals_t literals_;
 
     symbols_t symbols_;
 

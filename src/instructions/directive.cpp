@@ -75,7 +75,10 @@ namespace hax
 
       bool is_word = mnemonic_ == "WORD";
       operand_->evaluate();
-      length_ = (is_word ? 3 : 1) * operand_->length();
+      if (is_word)
+        length_ = 3;
+      else
+        length_ = operand_->length();
 
       assemblable_ = true;
 
@@ -155,6 +158,24 @@ namespace hax
 
       symmgr->__undefine(operand_->token());
       operand_ = 0;
+    } else if (mnemonic_ == "LTORG") {
+      symmgr->dump_literal_pool();
+    } else if (mnemonic_ == "END")
+    {
+      // if no starting instruction was assigned, just leave the control section's
+      // starting address as 0x0
+      if (!(operand_ && operand_->is_evaluated()))
+        return;
+
+      // extract the location of the instruction
+      symbol_manager *symmgr = parser::singleton().current_section()->symmgr();
+      symbol_t *oper = symmgr->lookup(operand_->token());
+
+      if (!oper)
+        throw undefined_symbol("in END instruction: " + operand_->token());
+
+      objcode_ = oper->address();
+      parser::singleton().sect()->assign_starting_address(objcode_);
     }
 
     //~ construct_relocation_records();
@@ -187,22 +208,6 @@ namespace hax
         operand_->evaluate();
       objcode_ = operand_->value();
       objcode_width_ = operand_->length() * 2;
-    } else if (mnemonic_ == "END")
-    {
-        string_t operand_str = "";
-        if (!operand_str_.empty())
-          operand_str = operand_str_;
-        else
-          operand_str = "0";
-
-        symbol_manager *symmgr = parser::singleton().current_section()->symmgr();
-        symbol_t *operand = symmgr->lookup(operand_str);
-
-        if (!operand)
-          throw undefined_symbol("in END instruction: " + operand_str);
-
-        objcode_ = operand->value();
-
     }
   }
 

@@ -89,6 +89,10 @@ namespace hax
 
     void serialize(string_t const& out_path);
 
+    bool has_starting_address() const;
+    loc_t starting_address();
+    void assign_starting_address(loc_t);
+
     protected:
 
     virtual std::ostream& to_stream(std::ostream&) const;
@@ -98,6 +102,8 @@ namespace hax
     pblock_t *pblock_;
     symbol_manager *symmgr_;
     instructions_t instructions_;
+    loc_t starting_addr_;
+    bool starting_addr_set_;
 	};
 
   typedef control_section csect_t;

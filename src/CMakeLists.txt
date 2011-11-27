@@ -17,6 +17,7 @@ SET(SRCS
     instructions/fmt3_instruction.cpp
     instructions/fmt4_instruction.cpp
     instructions/directive.cpp
+    instructions/literal.cpp
     instruction_factory.cpp
     main.cpp)
 

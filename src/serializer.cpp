@@ -104,9 +104,10 @@ namespace hax
 
     prog_name = utility::expand(prog_name, 6, ' ');
 
+    out << std::uppercase;
     out << 'H' << prog_name;
     out << "000000"; // relocatable program
-    out << std::hex << std::setw(6) << std::setfill('0') << instructions.back()->location(); // object program length
+    out << std::hex << std::setw(6) << std::setfill('0') << in_sect->block()->length(); // object program length
     // ...
     out << '\n';
     inst = 0;
@@ -248,7 +249,8 @@ namespace hax
     // write the END record
     inst = instructions.back();
     out << 'E';
-    out << std::hex << std::setw(6) << std::setfill('0') << inst->objcode(); // object program length
+    if (in_sect->has_starting_address())
+      out << std::hex << std::setw(6) << std::setfill('0') << in_sect->starting_address();
     out << '\n';
     inst = 0;
 

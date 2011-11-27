@@ -40,12 +40,15 @@ namespace hax
     protected:
     void (constant::*handler_)();
 
-    void handle_ascii_literal();
-    void handle_hex_literal();
-    void handle_current_loc();
-    void handle_literal(bool is_ascii);
-
+    void handle_ascii_constant();
+    void handle_hex_constant();
+    void handle_hex_or_ascii_constant(bool is_ascii);
     void handle_constant();
+    void handle_current_loc();
+    void handle_literal();
+
+
+    string_t stripped_;
 
     void copy_from(const constant&);
 	};

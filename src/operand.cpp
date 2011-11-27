@@ -106,6 +106,10 @@ namespace hax
     return type_ == t_expression;
   }
 
+  bool operand::is_literal() const {
+    return type_ == t_literal;
+  }
+
   uint16_t operand::length() const
   {
     return length_;

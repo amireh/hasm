@@ -79,7 +79,7 @@ namespace hax
     this->opcode_ = src.opcode_;
     this->location_ = src.location_;
     this->label_ = src.label_;
-    this->operand_str_ = src.operand_str_;
+    //~ this->operand_str_ = src.operand_str_;
     this->format_ = src.format_;
     this->length_ = src.length_;
     this->addr_mode_ = src.addr_mode_;
@@ -113,17 +113,21 @@ namespace hax
 
   void instruction::assign_operand(string_t const& in_token)
   {
-    operand_str_ = in_token;
+    string_t operand_str = in_token;
 
-    // is it an indexed operand?
-    if (operand_str_.find(",X") != std::string::npos)
+    // is it an indexed instruction?
+    if (operand_str.find(",X") != std::string::npos)
     {
       indexed_ = true;
-      operand_str_ = operand_str_.substr(0, operand_str_.size()-2);
+      operand_str = operand_str.substr(0, operand_str.size()-2);
     }
 
     // create the operand object
-    operand_ = operand_factory::singleton().create(operand_str_);
+    operand_ = operand_factory::singleton().create(operand_str);
+  }
+  void instruction::assign_operand(operand* in_operand)
+  {
+    operand_ = in_operand;
   }
 
   loc_t instruction::location() const
@@ -185,14 +189,6 @@ namespace hax
     out << "\tOpcode: 0x" << std::hex << std::setw(2) << std::setfill('0') << (int)opcode_ << std::endl;
     out << "\tLocation: 0x" << std::hex << std::setw(3) << std::setfill('0') << (int)location_ << std::endl;
     out << "\tLabel: " << (label_ ? label_->token() : "undefined") << "\n";
-
-    /*out << "\tTokens [" << operands_.size() << "]:\n";
-    int ctr = 0;
-    for (auto token : operands_)
-    {
-      out << "\t\t" << ctr << ". " << token << "\n";
-      ++ctr;
-    }*/
 
     return out.str();
   }
@@ -295,7 +291,7 @@ namespace hax
       {
         reloc_recs_.push_back(construct_relocation_record(sym));
       }
-      std::cout << " => " << reloc_recs_.size() << "\n";
+      //~ std::cout << " => " << reloc_recs_.size() << "\n";
     }
     else {
       //~ std::cout << "warn: unknown type of expression for relocation evaluation: " << line_ << "\n";
@@ -313,6 +309,13 @@ namespace hax
   void instruction::postprocess()
   {
     construct_relocation_records();
+  }
+
+  operand* instruction::get_operand() const { return operand_; }
+
+  program_block* instruction::block() const
+  {
+    return pblock_;
   }
 
 } // end of namespace

@@ -29,7 +29,7 @@ namespace hax
     public:
 
 		fmt3_instruction() = delete;
-		explicit fmt3_instruction(opcode_t, const string_t&);
+		explicit fmt3_instruction(opcode_t, const string_t&, pblock_t* block);
     fmt3_instruction(const fmt3_instruction& src);
 		fmt3_instruction& operator=(const fmt3_instruction& rhs);
 		virtual ~fmt3_instruction();

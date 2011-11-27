@@ -289,7 +289,7 @@ namespace hax
     }
 
     out = operands.back();
-    //~ std::cout << "resulted of postfix expression: " << in_expr << " = " << result_ << "\n";
+    std::cout << "resulted of postfix expression: " << in_expr << " = " << result_ << "\n";
 
     return result_;
   }
