@@ -271,16 +271,13 @@ namespace hax
       instruction* inst = 0;
       symbol_t* label = 0;
 
-      // if by now we were not assigned a control section, abort
       // check whether this is a CSECT or START entry
-      if (tokens.size() == 2)
+      if (tokens.size() >= 2 && (line.find("START") != std::string::npos || line.find("CSECT") != std::string::npos))
       {
-        if (tokens.back() == "START" || tokens.back() == "CSECT")
-        {
-          __register_section(tokens.front());
-        }
+        __register_section(tokens.front());
       }
 
+      // if by now we were not assigned a control section, abort
       if (!csect_) {
         throw invalid_context("an input program must begin with a START or CSECT entry to define a control section!");
       }

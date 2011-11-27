@@ -1,6 +1,6 @@
 * update the M records to reflect the symbol and operation
 * update the M records to reflect the true length of the operands
-* implement R and D records
+* implement R and D records (done)
 * implement ORG, LTORG
 * implement literals (especially ones with * EQU)
-* implement EXTREF & EXTDEF
+* implement EXTREF & EXTDEF (done)

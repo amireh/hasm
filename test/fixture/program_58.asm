@@ -2,7 +2,7 @@
 ;   System Software, An Introduction to Systems Programming 3rd Ed. (L. L. Beck)
 ;   Figure 2.6, Page 58
 
-COPY START
+COPY START 0
 FIRST STL RETADR
 LDB #LENGTH
 BASE LENGTH
