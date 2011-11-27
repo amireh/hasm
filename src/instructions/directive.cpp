@@ -29,8 +29,8 @@ namespace hax
   extern bool VERBOSE;
   using utility::stringify;
 
-	directive::directive(opcode_t in_opcode, string_t const& in_mnemonic)
-  : instruction(in_opcode, in_mnemonic)
+	directive::directive(opcode_t in_opcode, string_t const& in_mnemonic, pblock_t* block)
+  : instruction(in_opcode, in_mnemonic, block)
   {
     format_ = format::fmt_directive;
 	}
@@ -64,7 +64,7 @@ namespace hax
     length_ = 0;
 
     assemblable_ = false;
-    symbol_manager* symmgr = parser::singleton().sect()->symmgr();
+    symbol_manager* symmgr = pblock_->sect()->symmgr();
 
     if (mnemonic_ == "BYTE" || mnemonic_ == "WORD")
     {
@@ -126,7 +126,7 @@ namespace hax
       else
         block_name = operand_->token();
 
-      parser::singleton().sect()->switch_to_block(block_name);
+      pblock_->sect()->switch_to_block(block_name);
     } /*else if (mnemonic_ == "START" || mnemonic_ == "CSECT")
     {
       if (!operand_ || operand_->token().empty())
@@ -168,14 +168,14 @@ namespace hax
         return;
 
       // extract the location of the instruction
-      symbol_manager *symmgr = parser::singleton().current_section()->symmgr();
+      symbol_manager *symmgr = pblock_->sect()->symmgr();
       symbol_t *oper = symmgr->lookup(operand_->token());
 
       if (!oper)
         throw undefined_symbol("in END instruction: " + operand_->token());
 
       objcode_ = oper->address();
-      parser::singleton().sect()->assign_starting_address(objcode_);
+      pblock_->sect()->assign_starting_address(objcode_);
     }
 
     //~ construct_relocation_records();
@@ -201,14 +201,14 @@ namespace hax
         << std::hex << std::setw(4) << std::setfill('0') << parser::singleton().base()
         << "\n";
 
-    } else if (mnemonic_ == "BYTE" || mnemonic_ == "WORD")
+    } /*else if (mnemonic_ == "BYTE" || mnemonic_ == "WORD")
     {
       // BYTE constant values have already been evaluated in preprocess()
       if (!operand_->is_evaluated())
         operand_->evaluate();
       objcode_ = operand_->value();
       objcode_width_ = operand_->length() * 2;
-    }
+    }*/
   }
 
   bool directive::is_valid() const

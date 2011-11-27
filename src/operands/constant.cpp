@@ -26,8 +26,8 @@ namespace hax
 {
   using utility::stringify;
 
-	constant::constant(string_t const& in_token)
-  : operand(in_token)
+	constant::constant(string_t const& in_token, instruction* in_inst)
+  : operand(in_token, in_inst)
   {
     type_ = t_constant;
 
@@ -80,7 +80,7 @@ namespace hax
     handler_ = 0;
 	}
 
-  constant::constant(const constant& src) : operand(src.token_)
+  constant::constant(const constant& src) : operand(src.token_, src.inst_)
   {
     copy_from(src);
   }
@@ -105,7 +105,7 @@ namespace hax
 
   void constant::handle_literal()
   {
-    instruction* lit = parser::singleton().sect()->symmgr()->lookup_literal(token_);
+    instruction* lit = inst_->block()->sect()->symmgr()->lookup_literal(token_);
     value_ = lit->location();
 
     /*std::stringstream hex_repr;
@@ -157,8 +157,11 @@ namespace hax
     length_ = stripped_.size();
 
     // since one byte holds 2 hex digits, we divide the length by two
-    if (!is_ascii)
-      length_ /= std::ceil(2);
+    if (!is_ascii) {
+      std::cout << "shrinking hexa constant from: " << length_ << " to:";
+      length_ = std::ceil(length_ / 2);
+      std::cout << length_ << "\n";
+    }
   }
 
   void constant::handle_current_loc()

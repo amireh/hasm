@@ -30,8 +30,8 @@ namespace hax
 
   expression::weights_t expression::operator_weights;
 
-	expression::expression(string_t const& in_token)
-  : operand(in_token),
+	expression::expression(string_t const& in_token, instruction* in_inst)
+  : operand(in_token, in_inst),
     absolute_(false)
   {
     type_ = t_expression;
@@ -71,7 +71,7 @@ namespace hax
 	{
 	}
 
-  expression::expression(const expression& src) : operand(src.token_)
+  expression::expression(const expression& src) : operand(src.token_, src.inst_)
   {
     copy_from(src);
   }

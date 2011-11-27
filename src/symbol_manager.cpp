@@ -19,6 +19,7 @@
  */
 
 #include "symbol_manager.hpp"
+#include "control_section.hpp"
 #include "instruction.hpp"
 #include "parser.hpp"
 #include "instructions/directive.hpp"
@@ -32,7 +33,8 @@ namespace hax
 
 	//~ symbol_manager* symbol_manager::__instance = 0;
 
-	symbol_manager::symbol_manager()
+	symbol_manager::symbol_manager(control_section* in_sect)
+  : sect_(in_sect)
   {
 
     // special symbol for internal usage:
@@ -58,11 +60,15 @@ namespace hax
 
 	symbol_manager::~symbol_manager()
 	{
+    literals_.clear();
+
     for (auto entry : symbols_)
     {
       delete entry.second;
     }
     symbols_.clear();
+
+    sect_ = 0;
 	}
 
 	/*symbol_manager* symbol_manager::singleton_ptr()
@@ -158,7 +164,7 @@ namespace hax
     }
 
 
-    literal* lit = new literal(in_value);
+    literal* lit = new literal(in_value, sect_->block());
     lit->add_dependency(in_dep);
     //literal->assign_label(lookup("*"));
     //~ operand* oper = new constant(in_value);
@@ -170,7 +176,7 @@ namespace hax
     return lit;
   }
 
-  void symbol_manager::dump_literal_pool()
+  void symbol_manager::dump_literal_pool(bool do_step)
   {
     program_block* block = parser::singleton().sect()->block();
 
@@ -186,8 +192,9 @@ namespace hax
       lit->preprocess();
       std::cout << "Literal : " << lit << "\n";
       lit->assemble();
-      //~ block->step();
 
+      if (do_step)
+        block->step();
     }
 
     //~ literals_.clear();
@@ -199,7 +206,7 @@ namespace hax
     if (finder != literals_.end())
       return finder->second;
 
-    std::cout << "\tCurrent literal table:\n";
+    std::cout << "\tCurrent literal table in " << sect_->name() << ":\n";
     for (auto entry : literals_)
       std::cout << "\t" << entry.first << " => " << entry.second << "\n";
 

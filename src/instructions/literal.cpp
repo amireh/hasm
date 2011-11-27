@@ -27,8 +27,8 @@ namespace hax
   extern bool VERBOSE;
   using utility::stringify;
 
-	literal::literal(string_t const& in_value)
-  : instruction(0x0, in_value),
+	literal::literal(string_t const& in_value, pblock_t* block)
+  : instruction(0x0, in_value, block),
     is_ascii_(false),
     assembled_(false)
   {
@@ -75,6 +75,16 @@ namespace hax
       stripped_ = mnemonic_.substr(2, mnemonic_.size()-3);
     }
 
+    length_ = stripped_.size();
+
+    std::cout << "Literal " << this << " original length = " << length_ << "\n";
+
+    // since one byte holds 2 hex digits, we divide the length by two
+    if (!is_ascii_) {
+      std::cout << "shrinking hexa constant from: " << length_ << " to:";
+      length_ = std::ceil(length_ / 2);
+      std::cout << length_ << "\n";
+    }
   }
 
   loc_t literal::length() const
@@ -84,6 +94,9 @@ namespace hax
 
   void literal::assemble()
   {
+    if (assembled_)
+      return;
+
     std::stringstream hex_repr;
     hex_repr << std::hex;
     for (auto c : stripped_)
@@ -93,15 +106,6 @@ namespace hax
         hex_repr << c;
 
     hex_repr >> objcode_;
-
-    length_ = stripped_.size();
-
-    // since one byte holds 2 hex digits, we divide the length by two
-    if (!is_ascii_) {
-      std::cout << "shrinking hexa constant from: " << length_ << " to:";
-      length_ = std::ceil(length_ / 2);
-      std::cout << length_ << "\n";
-    }
 
     for (auto dep : deps_)
     {

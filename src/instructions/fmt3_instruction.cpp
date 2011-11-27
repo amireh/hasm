@@ -28,8 +28,8 @@ namespace hax
 {
   using utility::stringify;
 
-	fmt3_instruction::fmt3_instruction(opcode_t in_opcode, string_t const& in_mnemonic)
-  : instruction(in_opcode, in_mnemonic)
+	fmt3_instruction::fmt3_instruction(opcode_t in_opcode, string_t const& in_mnemonic, pblock_t* block)
+  : instruction(in_opcode, in_mnemonic, block)
   {
     format_ = format::fmt_three;
     addr_mode_ = addressing_mode::simple;

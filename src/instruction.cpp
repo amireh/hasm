@@ -123,7 +123,7 @@ namespace hax
     }
 
     // create the operand object
-    operand_ = operand_factory::singleton().create(operand_str);
+    operand_ = operand_factory::singleton().create(operand_str, this);
   }
   void instruction::assign_operand(operand* in_operand)
   {

@@ -28,6 +28,7 @@
 
 namespace hax
 {
+  class instruction;
   class operand_factory {
     public:
 
@@ -45,7 +46,7 @@ namespace hax
      * the operand factory does not retain ownership of newly created instances,
      * it is the responsibility of the caller to free the allocated objects
      **/
-    operand_t* create(string_t const& opcode_token);
+    operand_t* create(string_t const& opcode_token, instruction* in_inst);
 
     bool __is_constant(string_t const& token);
     bool __is_literal(string_t const& token);

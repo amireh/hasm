@@ -46,7 +46,7 @@ namespace hax
 	}
 
   operand_t*
-  operand_factory::create(string_t const& in_token)
+  operand_factory::create(string_t const& in_token, instruction* in_inst)
   {
 
     string_t operand_str(in_token);
@@ -63,13 +63,14 @@ namespace hax
 
     // a constant
     if (__is_constant(operand_str)) {
-      _operand = new constant(in_token);
+      _operand = new constant(in_token, in_inst);
     } else if (__is_expression(operand_str)) {
-      _operand = new expression(in_token);
+      _operand = new expression(in_token, in_inst);
     } else {
-      // we do not own symbol objects, so we grab a reference and release it
-      // when we're destructed
-      _operand = parser::singleton().current_section()->symmgr()->declare(operand_str);
+      // we do not own symbol objects, so we grab a reference
+      // if the symbol is not already defined, then in_inst is the owner of this symbol
+      symbol_manager *symmgr = parser::singleton().sect()->symmgr();
+      _operand = symmgr->declare(operand_str);
     }
     return _operand;
   }

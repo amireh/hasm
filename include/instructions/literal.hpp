@@ -31,7 +31,7 @@ namespace hax
     typedef std::list<operand*> deps_t;
 
     literal() = delete;
-		explicit literal(string_t const& in_value);
+		explicit literal(string_t const& in_value, pblock_t* block);
     literal(const literal& src);
 		literal& operator=(const literal& rhs);
 		virtual ~literal();

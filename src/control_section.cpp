@@ -26,7 +26,7 @@ namespace hax
   control_section::control_section(string_t in_name)
   : name_(in_name),
     pblock_(new program_block("Unnamed", this)),
-    symmgr_(new symbol_manager()),
+    symmgr_(new symbol_manager(this)),
     starting_addr_(0x0),
     starting_addr_set_(false)
   {
@@ -114,7 +114,7 @@ namespace hax
   void
   control_section::assemble()
   {
-    symmgr_->dump_literal_pool();
+    symmgr_->dump_literal_pool(true);
 
     int idx = 0;
     for (auto block : pblocks_) {

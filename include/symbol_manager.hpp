@@ -29,13 +29,12 @@
 
 namespace hax
 {
+  class control_section;
   class symbol_manager {
     public:
     typedef std::map<string_t, symbol_t*> symbols_t;
 
-    //static symbol_manager* singleton_ptr();
-    //static symbol_manager& singleton();
-		symbol_manager();
+		symbol_manager(control_section* in_sect);
 		virtual ~symbol_manager();
 
     symbol_manager(const symbol_manager& src)=delete;
@@ -75,13 +74,24 @@ namespace hax
 
     instruction* declare_literal(string_t const& in_value, operand* in_dependency);
     instruction* lookup_literal(string_t const& in_value);
-    void dump_literal_pool();
+
+    /**
+     * Extracts all literals registered in the pool to the current location
+     * in the program block, and assembles them. This is called when LTORG
+     * is encountered, and when a control section is assembled.
+     *
+     * When do_step is set to true, the program_block of this section will
+     * step its location counter when the literal table is dumped. This is required
+     * when no LTORG is specified, and the pool is dumped at the end of the file
+     **/
+    void dump_literal_pool(bool do_step = false);
 
     protected:
     typedef std::map<string_t, literal*> literals_t;
     literals_t literals_;
 
     symbols_t symbols_;
+    control_section *sect_;
 
     private:
     //~ static symbol_manager *__instance;

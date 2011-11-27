@@ -26,7 +26,7 @@ namespace hax
   program_block::program_block(string_t in_name, csect_t* in_sect)
   : locctr_(0),
     name_(in_name),
-    csect_(in_sect)
+    sect_(in_sect)
   {
   }
 
@@ -48,7 +48,7 @@ namespace hax
   {
     in_inst->assign_location(locctr_);
 
-    csect_->__add_instruction(in_inst);
+    sect_->__add_instruction(in_inst);
     instructions_.push_back(in_inst);
   }
 
@@ -77,5 +77,10 @@ namespace hax
   size_t program_block::length() const
   {
     return locctr_;
+  }
+
+  control_section* program_block::sect() const
+  {
+    return sect_;
   }
 }

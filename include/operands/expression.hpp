@@ -37,7 +37,7 @@ namespace hax
     typedef std::list<symbol_t*> extrefs_t;
     static weights_t operator_weights;
 
-		explicit expression(string_t const& in_token);
+		explicit expression(string_t const& in_token, instruction* in_inst);
     expression()=delete;
     expression(const expression& src);
 		expression& operator=(const expression& rhs);

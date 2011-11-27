@@ -296,7 +296,7 @@ namespace hax
       else if (!is_op(tokens.front()))
         throw invalid_opcode("unrecognized operation: " + tokens.front());
 
-      inst = instruction_factory::singleton().create(tokens.front());
+      inst = instruction_factory::singleton().create(tokens.front(), csect_->block());
       tokens.pop_front();
 
       if (label)

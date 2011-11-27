@@ -27,8 +27,8 @@ namespace hax
 {
   using utility::stringify;
 
-	symbol::symbol(string_t const& in_label)
-  : operand(in_label),
+	symbol::symbol(string_t const& in_label, instruction* in_inst)
+  : operand(in_label, 0),
     address_(0x0),
     has_real_value_(false),
     external_ref_(false),
@@ -45,7 +45,7 @@ namespace hax
 	{
 	}
 
-  symbol::symbol(const symbol& src) : operand(src.token_)
+  symbol::symbol(const symbol& src) : operand(src.token_, src.inst_)
   {
     copy_from(src);
   }

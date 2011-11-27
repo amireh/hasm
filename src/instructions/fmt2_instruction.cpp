@@ -28,8 +28,8 @@ namespace hax
 {
   using utility::stringify;
 
-	fmt2_instruction::fmt2_instruction(opcode_t in_opcode, string_t const& in_mnemonic)
-  : instruction(in_opcode, in_mnemonic),
+	fmt2_instruction::fmt2_instruction(opcode_t in_opcode, string_t const& in_mnemonic, pblock_t* block)
+  : instruction(in_opcode, in_mnemonic, block),
     lhs_(0),
     rhs_(0)
   {

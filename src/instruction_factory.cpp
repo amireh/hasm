@@ -45,7 +45,7 @@ namespace hax
 	}
 
   instruction_t*
-  instruction_factory::create(string_t const& in_token)
+  instruction_factory::create(string_t const& in_token, program_block *in_block)
   {
     int ec = -1;
     opcode_fmt_t tuple = parser::singleton().opcode_from_token(in_token, &ec);
@@ -58,10 +58,10 @@ namespace hax
     switch (std::get<1>(tuple))
     {
       case format::fmt_one:
-        inst = new fmt1_instruction(opcode, in_token);
+        inst = new fmt1_instruction(opcode, in_token, in_block);
         break;
       case format::fmt_two:
-        inst = new fmt2_instruction(opcode, in_token);
+        inst = new fmt2_instruction(opcode, in_token, in_block);
         break;
       case format::fmt_three | format::fmt_four:
       case format::fmt_three:
@@ -70,15 +70,15 @@ namespace hax
         if (in_token.front() == '+')
         {
           // fmt4
-          inst = new fmt4_instruction(opcode, in_token);
+          inst = new fmt4_instruction(opcode, in_token, in_block);
         } else
         {
           // fmt3
-          inst = new fmt3_instruction(opcode, in_token);
+          inst = new fmt3_instruction(opcode, in_token, in_block);
         }
         break;
       case format::fmt_directive:
-        inst = new directive(opcode, in_token);
+        inst = new directive(opcode, in_token, in_block);
         break;
       default:
         throw invalid_format("unrecognized format for operation: " + in_token);

@@ -49,6 +49,8 @@ namespace hax
     void shift(int in_amount);
     size_t length() const;
 
+    control_section *sect() const;
+
     /**
      * registers the given instruction with this program block and assigns
      * an address to it based on this object's location counter, finally the
@@ -63,7 +65,7 @@ namespace hax
     loc_t locctr_;
     string_t name_;
     instructions_t instructions_;
-    csect_t* csect_;
+    csect_t* sect_;
 	};
 
   typedef program_block pblock_t;

@@ -25,11 +25,12 @@ namespace hax
 {
   using utility::stringify;
 
-	operand::operand(string_t const& in_token)
+	operand::operand(string_t const& in_token, instruction* in_inst)
   : token_(in_token),
     value_(0x0),
     type_(t_undefined),
     length_(0x0),
+    inst_(in_inst),
     evaluated_(false)
   {
     //~ std::cout << this << "\n";
@@ -37,6 +38,7 @@ namespace hax
 
 	operand::~operand()
 	{
+    inst_ = 0;
 	}
 
   operand::operand(const operand& src)
@@ -58,6 +60,7 @@ namespace hax
     this->value_ = src.value_;
     this->type_ = src.type_;
     this->length_ = src.length_;
+    this->inst_ = src.inst_;
     this->evaluated_ = src.evaluated_;
   }
 
@@ -113,5 +116,9 @@ namespace hax
   uint16_t operand::length() const
   {
     return length_;
+  }
+
+  instruction* operand::inst() const {
+    return inst_;
   }
 } // end of namespace

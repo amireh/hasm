@@ -22,6 +22,7 @@
 #define h_instruction_factory_h
 
 #include "instruction.hpp"
+#include "program_block.hpp"
 #include "fmt1_instruction.hpp"
 #include "fmt2_instruction.hpp"
 #include "fmt3_instruction.hpp"
@@ -59,7 +60,7 @@ namespace hax
      * the instruction factory does not retain ownership of newly created instances,
      * it is the responsibility of the caller to free the allocated objects
      **/
-    instruction_t* create(string_t const& opcode_token);
+    instruction_t* create(string_t const& opcode_token, program_block *in_block);
 
     private:
     static instruction_factory *__instance;

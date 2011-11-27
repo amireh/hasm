@@ -28,8 +28,8 @@ namespace hax
 {
   using utility::stringify;
 
-	fmt4_instruction::fmt4_instruction(opcode_t in_opcode, string_t const& in_mnemonic)
-  : instruction(in_opcode, in_mnemonic)
+	fmt4_instruction::fmt4_instruction(opcode_t in_opcode, string_t const& in_mnemonic, pblock_t* block)
+  : instruction(in_opcode, in_mnemonic, block)
   {
     format_ = format::fmt_four;
     objcode_width_ = 8;

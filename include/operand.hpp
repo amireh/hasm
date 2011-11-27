@@ -26,10 +26,11 @@
 
 namespace hax
 {
+  class instruction;
   class operand : public loggable {
     public:
 
-		explicit operand(string_t const& in_token);
+		explicit operand(string_t const& in_token, instruction* in_inst);
     operand()=delete;
     operand(const operand& src);
 		operand& operator=(const operand& rhs);
@@ -49,6 +50,8 @@ namespace hax
     bool is_literal() const;
     bool is_expression() const;
 
+    instruction* inst() const;
+
     protected:
 
     void copy_from(const operand&);
@@ -65,6 +68,8 @@ namespace hax
     uint32_t value_;
     char type_;
     uint16_t length_;
+
+    instruction* inst_;
 
     /**
      * the reason we use a flag to indicate whether this operand has already been
