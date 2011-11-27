@@ -21,7 +21,7 @@ ENDFIL  LDA       =C'EOF'
         RETADR    RESW 1
         LENGTH    RESW 1
         LTORG
-*       =C'EOF'
+;~ *       =C'EOF'
 BUFFER  RESB      4096
 BUFEND  EQU       *
 MAXLEN  EQU       BUFEND-BUFFER
@@ -63,4 +63,4 @@ WLOOP   TD        =X'05'
         JLT       WLOOP
         RSUB
         END       FIRST
-*       =X'05'
+;~ *       =X'05'

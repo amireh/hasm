@@ -41,7 +41,6 @@ namespace hax
     indexed_(false),
     mnemonic_(in_mnemonic),
     objcode_width_(6),
-    relocatable_(false),
     assemblable_(true)
   {
 	}
@@ -52,6 +51,12 @@ namespace hax
     label_ = 0;
     if (!operand_->is_symbol())
       delete operand_;
+
+    while (!reloc_recs_.empty())
+    {
+      delete reloc_recs_.back();
+      reloc_recs_.pop_back();
+    }
 
     operand_ = 0;
 	}
@@ -160,8 +165,11 @@ namespace hax
         out << "\t";
     }
 
-    if (objcode_)
+    if (objcode_ || (operand_ && operand_->is_evaluated()))
       out << "\t\t" << std::hex << std::setw(objcode_width_) << std::setfill('0') << objcode_;
+
+    if (is_relocatable())
+      out << "\t+relocatable with [" << reloc_recs_.size() << " M records]";
 
     out << std::nouppercase;
 
@@ -211,7 +219,7 @@ namespace hax
 
   bool instruction::is_relocatable() const
   {
-    return relocatable_;
+    return !reloc_recs_.empty();
   }
 
   string_t const& instruction::mnemonic() const
@@ -219,5 +227,92 @@ namespace hax
     return mnemonic_;
   }
 
+  instruction::reloc_records_t&
+  instruction::reloc_records()
+  {
+    return reloc_recs_;
+  }
+
+  void instruction::construct_relocation_records()
+  {
+    if (!operand_)
+      return;
+
+    // if the operand is an expression, we need to go through all its sub-operands,
+    // check if they're an external reference, and if so, add a relocation record
+    if (operand_->is_expression())
+    {
+      expression* expr = static_cast<expression*>(operand_);
+
+      std::map<string_t, size_t> index;
+
+      string_t infix = utility::remove_in_string(expr->token(), ' ');
+      for (auto ref : expr->references())
+      {
+        char sign = '+';
+        if (ref->is_external_ref())
+        {
+          // scan the infix expression for this symbol and find its operator
+
+          // register the symbol if it's the first time we're scanning for it
+          size_t offset = 0;
+          if (index.find(ref->token()) == index.end())
+            index.insert(std::make_pair(ref->token(), 0));
+          else
+            offset = index[ref->token()]; // use the last saved offset
+
+          // find the next occurence of this symbol
+          size_t pos = infix.find(ref->token(), offset);
+
+          // if pos == 0, then the sign is positive
+          if (pos != 0) {
+            if (infix[pos-1] == '-') sign = '-';
+            else if (infix[pos-1] == '+' || infix[pos-1] == '(') sign = '+';
+            else throw invalid_operand("can not evaluate the sign of external reference '" + ref->token() +
+              "' in expression: " + infix);
+          }
+
+          // save the last position we found this token at, so if there's another
+          // reference to it, we'll be at the correct offset
+          index[ref->token()] = pos;
+
+          // finally, save the record
+          reloc_record_t* rec = construct_relocation_record(ref);
+          rec->value[0] = sign;
+          reloc_recs_.push_back(rec);
+
+          std::cout << "** created a reloc record for expression: " << rec->value << "\n";
+        }
+      }
+    }
+
+    // if the operand is an external reference to a symbol, then it's straight-forward
+    else if (operand_->is_symbol())
+    {
+      //~ std::cout << "info: evaluating relocation record for: " << line_;
+      symbol_t* sym = static_cast<symbol*>(operand_);
+      if (sym->is_external_ref())
+      {
+        reloc_recs_.push_back(construct_relocation_record(sym));
+      }
+      std::cout << " => " << reloc_recs_.size() << "\n";
+    }
+    else {
+      //~ std::cout << "warn: unknown type of expression for relocation evaluation: " << line_ << "\n";
+    }
+  }
+
+  instruction::reloc_record_t* instruction::construct_relocation_record(symbol_t* sym)
+  {
+    reloc_record_t* rec = new reloc_record_t();
+    rec->value = "+" + sym->token();
+    rec->length = (format_ == format::fmt_four) ? 0x05 : 0x06; // TODO: verify this
+    return rec;
+  }
+
+  void instruction::postprocess()
+  {
+    construct_relocation_records();
+  }
 
 } // end of namespace

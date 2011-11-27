@@ -91,6 +91,11 @@ namespace hax
 
   void expression::evaluate()
   {
+    if (evaluated_) {
+      assert(false); // this REALLY should not happen
+      return;
+    }
+
     // only when all external symbol references are resolved can we evaluate
     if (!extrefs_.empty())
     {
@@ -129,11 +134,13 @@ namespace hax
       postfix_expr_ = utility::join(tokens, ' ');
       //~ std::cout << "\tPostfix expression now substituted: " << postfix_expr_ << "\n";
 
-      extrefs_.clear();
+      // don't clear the references since we need them for the M records
+      //~ extrefs_.clear();
     }
 
     //~ std::cout << "\tall expression symbol references are now resolved, evaluating...\n";
     value_ = evaluate_postfix(postfix_expr_);
+    length_ = 3;
     evaluated_ = true;
   }
 
@@ -311,6 +318,11 @@ namespace hax
     }
 
     return 0;
+  }
+
+  expression::extrefs_t& expression::references()
+  {
+    return extrefs_;
   }
 
 } // end of namespace

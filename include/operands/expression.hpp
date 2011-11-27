@@ -34,6 +34,7 @@ namespace hax
   class expression : public operand {
     public:
     typedef std::map<char, int> weights_t;
+    typedef std::list<symbol_t*> extrefs_t;
     static weights_t operator_weights;
 
 		explicit expression(string_t const& in_token);
@@ -50,6 +51,8 @@ namespace hax
      **/
     virtual bool is_absolute() const;
 
+    extrefs_t& references();
+
     protected:
     void copy_from(const expression&);
     int evaluate_postfix(string_t in_expr/*, std::vector<string_t> in_operands*/);
@@ -61,7 +64,6 @@ namespace hax
     bool has_precedence(char op1, char op2);
     int apply_operator(char op, int lhs, int rhs);
 
-    typedef std::list<symbol_t*> extrefs_t;
     extrefs_t extrefs_;
 
     string_t postfix_expr_;

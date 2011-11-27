@@ -144,6 +144,8 @@ namespace hax
     // try calculating the displacement using PC, then base, then immediate addressing
     if (!operand_->is_constant())
     {
+      //~ construct_relocation_records();
+
       if (pc_relative_viable(target_address))
       {
         disp = target_address - (location() + length());

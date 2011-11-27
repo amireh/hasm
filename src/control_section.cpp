@@ -121,7 +121,12 @@ namespace hax
     {
       //~ inst->resolve_references();
       inst->assemble();
-      std::cout << inst << "\n";
+      //~ std::cout << inst << "\n";
+    }
+
+    for (auto inst : instructions_)
+    {
+      inst->postprocess();
     }
   }
 

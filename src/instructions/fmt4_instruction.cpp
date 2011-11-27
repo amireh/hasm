@@ -86,16 +86,17 @@ namespace hax
     uint32_t targeting_flags = 0x0;
 
     if (indexed_)
-      targeting_flags |= 0x1 << 23;
+      targeting_flags |= 0x8 << 20;
 
     assert(operand_);
 
     // all extended format operations require relocation except constant-operanded ones
-    relocatable_ = true;
+    //~ relocatable_ = true;
 
     // extract the target address
     operand_->evaluate();
     disp = target_address = operand_->value();
+
 
     // assign addressing flags
     if (addr_mode_ == addressing_mode::immediate)
@@ -103,11 +104,12 @@ namespace hax
       // if it's an immediate operand
       //~ if (operand_->is_constant()) {
         targeting_flags |= 0x1 << 24;
-        relocatable_ = false;
+        //~ relocatable_ = false;
       //~ }
     } else if (addr_mode_ == addressing_mode::simple) {
       targeting_flags |= 0x3 << 24; // neither indirect nor immediate
-      //~ assert(false);
+      //~ construct_relocation_records();
+
     } else {
       throw invalid_addressing_mode(this->line_);
     }

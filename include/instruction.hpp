@@ -55,6 +55,28 @@ namespace hax
       immediate = 0x010000
     };
 
+    /**
+     * relocation records are used by the serializer to create M records:
+     * they contain the name of the symbol, plus the operation in _value_
+     * as well as the length of the field to be modified in _length_
+     *
+     * example:
+     *  value = +LENGTH
+     *  length = 0x06
+     *
+     * an instruction can have one or multiple relocation records (in case it's
+     * an expression containing multiple external symbol references)
+     *
+     * all format 4 instructions require a relocation record unless the operand
+     * is addressed using immediate mode
+     **/
+    struct reloc_record_t {
+      string_t value;
+      uint16_t length;
+    };
+
+    typedef std::list<reloc_record_t*> reloc_records_t;
+
     typedef addressing_mode addressing_mode_t;
 
     instruction() = delete;
@@ -90,11 +112,17 @@ namespace hax
      **/
     virtual void preprocess();
 
+    /**
+     * this will be called *after* this instruction has been assembled, a major
+     * function that's carried out here is identifying relocatability and constructing
+     * relocation records accordingly
+     **/
+    virtual void postprocess();
+
     //void register_token(string_t const&);
     void assign_location(loc_t);
     void assign_label(symbol_t* const);
     virtual void assign_operand(string_t const&);
-
     void assign_line(string_t const&);
 
     //int nr_tokens() const;
@@ -120,12 +148,16 @@ namespace hax
      **/
     bool is_fulfilled() const;
 
+    reloc_records_t& reloc_records();
+
     protected:
     typedef std::vector<string_t> operands_t;
 
     virtual void copy_from(const instruction&);
 
     virtual std::ostream& to_stream(std::ostream&) const;
+    void construct_relocation_records();
+    reloc_record_t* construct_relocation_record(symbol_t* sym);
 
     /**
      * the opcode is automatically set when the instruction is created by looking
@@ -155,11 +187,12 @@ namespace hax
     bool indexed_;
     string_t mnemonic_;
     uint8_t objcode_width_;
-    bool relocatable_;
 
     // some assembler directives like RESB and RESW do not construct object code
     // this flag is set to false in such instructions
     bool assemblable_;
+
+    reloc_records_t reloc_recs_;
 
     private:
 	};

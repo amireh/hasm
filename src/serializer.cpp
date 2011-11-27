@@ -120,7 +120,7 @@ namespace hax
     for (auto entry : symmgr->symbols())
     {
       symbol_t *sym = entry.second;
-      std::cout << "\tchecking whether symbol '" << sym->token() << "' is an external ref or definition\n";
+      //~ std::cout << "\tchecking whether symbol '" << sym->token() << "' is an external ref or definition\n";
       if (sym->is_external_def())
       {
         d_record_str << utility::expand(sym->token(), 6, ' ');
@@ -174,17 +174,22 @@ namespace hax
 
       // does this instruction require an M record for relocation?
       if (inst->is_relocatable()) {
-        m_record *mrec = new m_record();
-        mrec->location = rec->length + rec->address + 1;
-        mrec->length = 0x05; // TODO: determine M record length
-        mrec->inst = inst;
-        m_records.push_back(mrec);
+        for (auto reloc_rec : inst->reloc_records())
+        {
+          m_record *mrec = new m_record();
+          //~ mrec->location = rec->length + rec->address + 1;
+          mrec->location = inst->location() + (0x06 - reloc_rec->length);
+          mrec->length = reloc_rec->length;
+          mrec->value = reloc_rec->value;
+          //mrec->inst = inst;
+          m_records.push_back(mrec);
+        }
       }
 
       // step the T record's length by this instruction's length
       rec->length += inst->length();
 
-      std::cout << "added inst: " << inst << " to t_record " << t_records.size() + 1 << "\n";
+      std::cout << "t_record[" << t_records.size() + 1 << "] =>: " << inst << '\n';
 
       // finally, track this instruction and process the next
       rec->instructions.push_back(inst);
@@ -230,6 +235,7 @@ namespace hax
       out << std::uppercase << std::hex << std::setfill('0');
       out << 'M' << '^' << std::setw(6) << rec->location;
       out << '^' << std::setw(2) << rec->length;
+      out << '^' << rec->value;
       out << '\n';
     }
     // and clean em up

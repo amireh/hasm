@@ -1,5 +1,5 @@
-* update the M records to reflect the symbol and operation
-* update the M records to reflect the true length of the operands
+* update the M records to reflect the symbol and operation (done)
+* update the M records to reflect the true length of the operands (done)
 * implement R and D records (done)
 * implement ORG, LTORG
 * implement literals (especially ones with * EQU)

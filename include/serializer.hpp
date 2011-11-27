@@ -60,7 +60,8 @@ namespace hax
     struct m_record {
       uint32_t location;
       uint32_t length;
-      instruction_t* inst;
+      //~ instruction_t* inst;
+      string_t value;
     };
 
     /*struct d_record {

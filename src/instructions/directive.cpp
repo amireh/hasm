@@ -156,6 +156,8 @@ namespace hax
       symmgr->__undefine(operand_->token());
       operand_ = 0;
     }
+
+    //~ construct_relocation_records();
   }
 
   loc_t directive::length() const
@@ -178,10 +180,11 @@ namespace hax
         << std::hex << std::setw(4) << std::setfill('0') << parser::singleton().base()
         << "\n";
 
-    } else if (mnemonic_ == "BYTE")
+    } else if (mnemonic_ == "BYTE" || mnemonic_ == "WORD")
     {
       // BYTE constant values have already been evaluated in preprocess()
-      operand_->evaluate();
+      if (!operand_->is_evaluated())
+        operand_->evaluate();
       objcode_ = operand_->value();
       objcode_width_ = operand_->length() * 2;
     } else if (mnemonic_ == "END")
