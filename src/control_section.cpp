@@ -20,6 +20,7 @@
 
 #include "control_section.hpp"
 #include "serializer.hpp"
+#include "parser.hpp"
 
 namespace hax
 {
@@ -30,6 +31,7 @@ namespace hax
     starting_addr_(0x0),
     starting_addr_set_(false)
   {
+    pblocks_.push_back(pblock_);
   }
 
   control_section::~control_section()
@@ -92,11 +94,14 @@ namespace hax
     for (auto block : pblocks_)
       if (block->name() == in_name) {
         pblock_ = block;
+        std::cout << "switching to existing program block: " << pblock_->name() << "\n";
         return;
       }
 
+
     pblock_ = new program_block(in_name, this);
     pblocks_.push_back(pblock_);
+    std::cout << "switching to new program block: " << pblock_->name() << "\n";
   }
 
   void
@@ -114,24 +119,42 @@ namespace hax
   void
   control_section::assemble()
   {
-    symmgr_->dump_literal_pool(true);
+    //~ symmgr_->dump_literal_pool(true);
 
     int idx = 0;
     for (auto block : pblocks_) {
-      std::cout << "Assigning address to program block '" << block->name() << "'\n";
+      std::cout << "Assigning address to program block '" << block->name() << "' = " << idx << "\n";
       block->shift(idx);
-      idx += block->locctr();
+      idx += block->length();
     }
 
+    bool failed = false;
     for (auto inst : instructions_)
     {
-      inst->assemble();
+      try {
+        inst->assemble();
+      } catch (hax_error& e) {
+        parser::singleton().track_error(e);
+      }
       //~ std::cout << inst << "\n";
     }
 
+    if (failed) {
+      return parser::singleton().report_errors();
+    }
+
     for (auto inst : instructions_)
     {
-      inst->postprocess();
+      try {
+        inst->postprocess();
+      } catch (hax_error& e) {
+        parser::singleton().track_error(e);
+        failed = true;
+      }
+    }
+
+    if (failed) {
+      parser::singleton().report_errors();
     }
   }
 

@@ -71,7 +71,7 @@ namespace hax
       // BYTE and WORD directive operands need be either immediate constants, or a constant
       // absolute expression
       if (!operand_->is_constant() && !operand_->is_expression())
-        throw invalid_operand(mnemonic_ + " directives operands can only be constant decimal integers, source: " + line_);
+        throw invalid_operand(mnemonic_ + " directives operands can only be constant decimal integers", line_);
 
       bool is_word = mnemonic_ == "WORD";
       operand_->evaluate();
@@ -84,12 +84,9 @@ namespace hax
 
     } else if (mnemonic_ == "RESB" || mnemonic_ == "RESW") {
 
-      //if (!operand_->is_constant() && !operand_->is_symbol())
-      //  throw invalid_operand("RESW and RESB directives operands can only be constant decimal integers");
-
       operand_->evaluate();
       if (operand_->is_expression() && !operand_->is_evaluated())
-        throw invalid_operand("expressions in RESB and RESW operands must be evaluated, source: " + line_);
+        throw invalid_operand("expressions in RESB and RESW operands must be evaluated", line_);
 
       bool is_word = mnemonic_ == "RESW";
       length_ = (is_word ? 3 : 1) * operand_->value();
@@ -116,8 +113,11 @@ namespace hax
       if (operand_->is_symbol())
         static_cast<symbol*>(operand_)->set_has_real_value(true);
 
-      if (!operand_->is_evaluated())
-        throw invalid_operand("EQU operands must be either constant decimal integers, previously defined symbols, or expressions of previously defined symbols");
+      if (!operand_->is_evaluated()) {
+        string_t msg = "EQU operands must be either constant decimal integers, ";
+        msg += "previously defined symbols, or expressions of previously defined symbols";
+        throw invalid_operand(msg.c_str(), line_);
+      }
 
     } else if (mnemonic_ == "USE") {
       std::string block_name;
@@ -159,7 +159,8 @@ namespace hax
       symmgr->__undefine(operand_->token());
       operand_ = 0;
     } else if (mnemonic_ == "LTORG") {
-      symmgr->dump_literal_pool();
+      parser::singleton().sect()->symmgr()->dump_literal_pool();
+      //~ symmgr->dump_literal_pool();
     } else if (mnemonic_ == "END")
     {
       // if no starting instruction was assigned, just leave the control section's
@@ -201,14 +202,14 @@ namespace hax
         << std::hex << std::setw(4) << std::setfill('0') << parser::singleton().base()
         << "\n";
 
-    } /*else if (mnemonic_ == "BYTE" || mnemonic_ == "WORD")
+    } else if (mnemonic_ == "BYTE" || mnemonic_ == "WORD")
     {
       // BYTE constant values have already been evaluated in preprocess()
       if (!operand_->is_evaluated())
         operand_->evaluate();
       objcode_ = operand_->value();
       objcode_width_ = operand_->length() * 2;
-    }*/
+    }
   }
 
   bool directive::is_valid() const

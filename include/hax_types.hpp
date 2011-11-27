@@ -18,11 +18,29 @@
  *  along with HASM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef h_hax_h
-#define h_hax_h
+#ifndef h_hax_types_h
+#define h_hax_types_h
 
-#include "hax_types.hpp"
-#include "hax_exception.hpp"
-#include "hax_utility.hpp"
+#include <string>
+#include <tuple>
+#include <iomanip>
+#include <cassert>
+#include <vector>
+#include <exception>
+#include <stdexcept>
+
+namespace hax {
+
+  class hax_error;
+
+  typedef uint8_t opcode_t;
+  typedef uint16_t loc_t;
+  typedef uint32_t objcode_t;
+  typedef std::string string_t;
+  typedef char format_t;
+  typedef std::tuple<opcode_t, format_t> opcode_fmt_t;
+  typedef std::vector<hax_error*> errors_t;
+
+}
 
 #endif

@@ -72,13 +72,16 @@ namespace hax
      * this is called internally by directive::preprocess() when a START or CSECT
      * assembler directive is encountered
      **/
-    void __register_section(std::string in_name);
+    void __register_section(std::string in_name, const string_t& in_line);
 
     /**
      * returns a reference to the current control section being parsed
      **/
     csect_t* current_section() const;
     csect_t* sect() const;
+
+    void track_error(hax_error& err);
+    void report_errors() const;
 
     /**
      * assigns the block identified by in_name to be the currently used one in
@@ -88,6 +91,7 @@ namespace hax
 
     protected:
     //~ friend class serializer;
+    std::vector<string_t> errors_;
 
     private:
     static parser *__instance;

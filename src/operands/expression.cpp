@@ -64,7 +64,7 @@ namespace hax
       }
     }
 
-    std::cout << "\texpression contains " << extrefs_.size() << " forward references to symbols\n";
+    //~ std::cout << "\texpression contains " << extrefs_.size() << " forward references to symbols\n";
 	}
 
 	expression::~expression()
@@ -103,7 +103,8 @@ namespace hax
       {
         if (!sym->is_evaluated())
         {
-          std::cout << "\t" << sym << " is still not resolved, can not evaluate\n";
+          //~ std::cout << "\t" << sym << " is still not resolved, can not evaluate\n";
+          throw unevaluated_operand(sym->token() + " is still not resolved, can not evaluate expression");
           return;
         }
       }
@@ -119,14 +120,14 @@ namespace hax
            for (auto sym : extrefs_)
            {
              if (sym->token() == token) {
-              std::cout << "\tsubstituted external ref term: " << token << " with " << sym->value() << "\n";
+              //~ std::cout << "\tsubstituted external ref term: " << token << " with " << sym->value() << "\n";
               token = stringify(sym->value());
               substituted = true;
             }
            }
 
            if (!substituted)
-            throw invalid_expression("");
+            throw invalid_expression("unable to evaluate symbol in expression: " + token, (inst_ ? inst_->line() : token_));
          }
       }
 
@@ -178,7 +179,7 @@ namespace hax
       if (operators.empty())
       {
         if (c == ')')
-          throw hax::invalid_expression("no equivalent '(' for ')'");
+          throw hax::invalid_expression("no equivalent '(' for ')'", (inst_ ? inst_->line() : token_));
 
         operators.push_back(c);
         continue;
@@ -289,7 +290,7 @@ namespace hax
     }
 
     out = operands.back();
-    std::cout << "resulted of postfix expression: " << in_expr << " = " << result_ << "\n";
+    //~ std::cout << "result of postfix expression: " << in_expr << " = " << result_ << "\n";
 
     return result_;
   }
@@ -314,7 +315,10 @@ namespace hax
       case '%':
       return lhs % rhs;
       default:
-      throw invalid_operator("unrecognized expression operation");
+      string_t msg = "unrecognized expression operation '";
+      msg += op;
+      msg += '\'';
+      throw invalid_operator(msg, (inst_ ? inst_->line() : token_));
     }
 
     return 0;

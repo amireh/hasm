@@ -32,6 +32,8 @@ namespace hax
 
   program_block::~program_block()
   {
+    instructions_.clear();
+    sect_ = 0;
   }
 
   loc_t program_block::locctr() const
@@ -46,6 +48,7 @@ namespace hax
 
   void program_block::add_instruction(instruction_t* in_inst)
   {
+    in_inst->__assign_block(this);
     in_inst->assign_location(locctr_);
 
     sect_->__add_instruction(in_inst);
@@ -60,8 +63,12 @@ namespace hax
 
   void program_block::step()
   {
-    if (!instructions_.empty())
+    if (!instructions_.empty()) {
+      std::cout << "Program block " << name_
+        << " location counter stepping to " << locctr_ + instructions_.back()->length()
+        << " from " << locctr_ << " in " << instructions_.back() << "\n";
       locctr_ += instructions_.back()->length();
+    }
 
   }
 

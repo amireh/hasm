@@ -21,109 +21,229 @@
 #ifndef h_hax_exception_h
 #define h_hax_exception_h
 
+#include "hax_types.hpp"
 #include <exception>
 #include <stdexcept>
 
 namespace hax {
 
-	class bad_conversion : public std::runtime_error {
+  /* ------------------------------------------------------------------------ */
+  /* generic errors */
+	class hax_error : public std::runtime_error {
 	public:
-		inline bad_conversion(const std::string& s)
-		: std::runtime_error(s)
+		inline hax_error(const string_t& s, string_t type)
+		: std::runtime_error(s),
+      type_(type)
+		{}
+    inline virtual ~hax_error() throw() { }
+
+    string_t const& type() { return type_; }
+    string_t const& source() { return line_; }
+
+    virtual const char* formatted_what() const throw()
+    {
+      string_t out = "ERROR '" + type_ + "': " + std::runtime_error::what();
+      return out.c_str();
+    }
+
+    protected:
+    string_t type_;
+    string_t line_;
+	};
+
+
+  /* invalid_context
+   *
+   * this error is raised if the input program does not begin with a START
+   * or CSECT operations, thus defining no context in which the entries should
+   * be processed
+   **/
+	class invalid_context : public hax_error {
+	public:
+		inline invalid_context(const string_t& s)
+		: hax_error(s, "invalid context")
 		{ }
 	};
 
-	class invalid_context : public std::runtime_error {
+  /* undefined symbol:
+   *
+   * raised when a symbol was referenced, was not flagged as an external reference
+   * using EXTREF, and has not been defined throughout the control section
+   **/
+	class undefined_symbol : public hax_error {
 	public:
-		inline invalid_context(const std::string& s)
-		: std::runtime_error(s)
+		inline undefined_symbol(const string_t& s)
+		: hax_error(s, "undefined symbol")
 		{ }
 	};
 
-	class invalid_entry : public std::runtime_error {
+  /* ------------------------------------------------------------------------ */
+  /* parser errors
+   *
+   * all of these exceptions are raised due to bad input, and for every error
+   * the source line is passed so it would be conveniently reported to the user
+   * where the error has occured
+   **/
+	class parser_error : public hax_error {
 	public:
-		inline invalid_entry(const std::string& s)
-		: std::runtime_error(s)
+		inline parser_error(const string_t& s, string_t type, string_t const& line)
+		: hax_error(s, type)
+		{
+      line_ = line;
+    }
+
+    inline virtual ~parser_error() throw() { }
+
+    virtual const char* formatted_what() const throw()
+    {
+      string_t out = hax_error::what();
+      out += ", source: " + line_;
+      return out.c_str();
+    }
+
+	};
+
+  /* invalid entry:
+   *
+   * raised when the parser encounters an invalid entry, which could be:
+   *  1. an unrecognized opcode
+   *  2. an attempt to redefine a control section
+   *  3. opcode and/or operands are missing
+   **/
+	class invalid_entry : public parser_error {
+	public:
+		inline invalid_entry(const string_t& s, const string_t& line)
+		: parser_error(s, "invalid entry", line)
 		{ }
 	};
 
-	class invalid_format : public std::runtime_error {
+  /* invalid addressing mode:
+   *
+   * raised if the input line specifies an addressing mode that doesn't make sense,
+   * like using the indirect mode in an extended (format 4) instruction
+   **/
+	class invalid_addressing_mode : public parser_error {
 	public:
-		inline invalid_format(const std::string& s)
-		: std::runtime_error(s)
+		inline invalid_addressing_mode(const string_t& s, string_t const& line)
+		: parser_error(s, "invalid addressing mode", line)
+		{
+    }
+	};
+
+  /* invalid operand:
+   *
+   * raised when:
+   *  1. an external reference's sign could not be evaluated inside an expression
+   *  2. RESB, RESW, BYTE, and WORD operations given a non-constant or absolute
+   *     expression operand
+   *  3. RESB and RESW given a non-evaluated expression
+   *  4. EQU passed non-evaluated arguments, they all must be previously defined
+   **/
+	class invalid_operand : public parser_error {
+	public:
+		inline invalid_operand(const string_t& s, string_t const& line)
+		: parser_error(s, "invalid operand", line)
 		{ }
 	};
 
-	class invalid_opcode : public std::runtime_error {
+  /* invalid operator:
+   *
+   * raised when an expression contains any operator that is not supported.
+   * supported operators are: *  + - / * ( )
+   **/
+	class invalid_operator : public parser_error {
 	public:
-		inline invalid_opcode(const std::string& s)
-		: std::runtime_error(s)
+		inline invalid_operator(const string_t& s, string_t const& line)
+		: parser_error(s, "invalid operator", line)
 		{ }
 	};
 
-	class invalid_addressing_mode : public std::runtime_error {
+  /* invalid expression:
+   *
+   * denotes an expression that might:
+   *  1. contain invalid correspondence in paranthesis
+   *  2. contain an external reference that can not be substituted
+   **/
+	class invalid_expression : public parser_error {
 	public:
-		inline invalid_addressing_mode(const std::string& s)
-		: std::runtime_error(s)
+		inline invalid_expression(const string_t& s, string_t const& line)
+		: parser_error(s, "invalid expression", line)
 		{ }
 	};
 
-	class invalid_operand : public std::runtime_error {
+  /* unrecognized operation:
+   *
+   * thrown when a given OPCODE could not be found in the master op table
+   **/
+	class unrecognized_operation : public parser_error {
 	public:
-		inline invalid_operand(const std::string& s)
-		: std::runtime_error(s)
+		inline unrecognized_operation(const string_t& s, const string_t& line )
+		: parser_error(s, "unrecognized operation", line)
 		{ }
 	};
 
-	class invalid_operator : public std::runtime_error {
+  /* symbol redefinition:
+   *
+   * this error will be thrown if a label has been encountered more than once
+   * at different locations in a single control section
+   **/
+	class symbol_redifinition : public parser_error {
 	public:
-		inline invalid_operator(const std::string& s)
-		: std::runtime_error(s)
+		inline symbol_redifinition(const string_t& s, const string_t& line)
+		: parser_error(s, "symbol redifinition", line)
 		{ }
 	};
 
-	class invalid_expression : public std::runtime_error {
+  /* out of bounds:
+   *
+   * raised if a format 3 operand can not be addressed using neither PC or base-relative
+   * modes, nor the immediate mode
+   **/
+	class target_out_of_bounds : public parser_error {
 	public:
-		inline invalid_expression(const std::string& s)
-		: std::runtime_error(s)
+		inline target_out_of_bounds(const string_t& s, const string_t& line)
+		: parser_error(s, "target out of bounds", line)
 		{ }
 	};
 
-	class undefined_symbol : public std::runtime_error {
+  /* ------------------------------------------------------------------------ */
+  /* internal errors:
+   *
+   * these are not based on user input and indicate a bug or flaw in the
+   * application's routines
+   **/
+	class internal_error : public hax_error {
 	public:
-		inline undefined_symbol(const std::string& s)
-		: std::runtime_error(s)
+		inline internal_error(const string_t& s, string_t type)
+		: hax_error(s, type)
+		{
+    }
+	};
+
+  /* bad conversion
+   *
+   * thrown when an argument passed to utility::convertTo<> is not a number
+   * and thus can not be converted
+   **/
+	class bad_conversion : public internal_error {
+	public:
+		inline bad_conversion(const string_t& s)
+		: internal_error(s, "bad_conversion")
 		{ }
 	};
 
-	class unevaluated_operand : public std::runtime_error {
+  /* unevaluated operand:
+   *
+   * raised when attempting to access an operand's value before calling its
+   * operand::evaluate() routine, this is an internal error and should really
+   * not happen
+   **/
+	class unevaluated_operand : public internal_error {
 	public:
-		inline unevaluated_operand(const std::string& s)
-		: std::runtime_error(s)
+		inline unevaluated_operand(const string_t& s)
+		: internal_error(s, "unevaluated operand")
 		{ }
 	};
-
-	class unrecognized_operation : public std::runtime_error {
-	public:
-		inline unrecognized_operation(const std::string& s)
-		: std::runtime_error(s)
-		{ }
-	};
-
-	class symbol_redifinition : public std::runtime_error {
-	public:
-		inline symbol_redifinition(const std::string& s)
-		: std::runtime_error(s)
-		{ }
-	};
-
-	class target_out_of_bounds : public std::runtime_error {
-	public:
-		inline target_out_of_bounds(const std::string& s)
-		: std::runtime_error(s)
-		{ }
-	};
-
 } // end of namespace hax
 
 #endif

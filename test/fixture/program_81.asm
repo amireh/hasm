@@ -42,7 +42,7 @@ RLOOP   TD      INPUT
 EXIT    STX     LENGTH
         RSUB
         USE     CDATA
-INPUT   BYTE    =X'F1'
+INPUT   BYTE    X'F1'
 ;
 ; SUBROUTINE TO WRITE RECORD FROM BUFFER
 ;
@@ -58,6 +58,4 @@ WLOOP   TD      =X'05'
         RSUB
         USE     CDATA
         LTORG
-FOO     BYTE    =C'EOF'
-BAR     BYTE    =X'05'
         END     FIRST

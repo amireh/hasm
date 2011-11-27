@@ -30,7 +30,7 @@
 
 namespace hax
 {
-
+  extern bool VERBOSE;
 	//~ symbol_manager* symbol_manager::__instance = 0;
 
 	symbol_manager::symbol_manager(control_section* in_sect)
@@ -114,15 +114,15 @@ namespace hax
   {
     return symbols_.find(in_name) != symbols_.end();
   }
-  /*
+
   bool symbol_manager::is_defined(string_t const& in_name) const
   {
     symbol_t *const sym = lookup(in_name);
     if (!sym)
       return false;
 
-    return sym->is_resolved();
-  }*/
+    return sym->is_evaluated();
+  }
 
   void symbol_manager::dump(std::ostream& out) const
   {
@@ -178,9 +178,11 @@ namespace hax
 
   void symbol_manager::dump_literal_pool(bool do_step)
   {
-    program_block* block = parser::singleton().sect()->block();
+    program_block* block = sect_->block();
 
-    std::cout << "-- Dumping the literal pool \n";
+    if (VERBOSE)
+      std::cout << "-- Dumping the literal pool \n";
+
     for (auto entry : literals_)
     {
       literal* lit = entry.second;
@@ -190,13 +192,17 @@ namespace hax
       block->add_instruction(lit);
       lit->assign_operand(entry.first);
       lit->preprocess();
-      std::cout << "Literal : " << lit << "\n";
+
+      if (VERBOSE)
+        std::cout << "Literal : " << lit << "\n";
+
+      //~ do_step = !lit->is_assembled();
       lit->assemble();
 
-      if (do_step)
+      //~ if (do_step)
         block->step();
     }
-
+    std::cout << "-- Literal pool created\n";
     //~ literals_.clear();
   }
 
@@ -206,10 +212,12 @@ namespace hax
     if (finder != literals_.end())
       return finder->second;
 
-    std::cout << "\tCurrent literal table in " << sect_->name() << ":\n";
+    std::cout
+      << "\tFATAL: Unable to find requested literal " << in_value
+      << ", current literal table in " << sect_->name() << " is:\n";
     for (auto entry : literals_)
       std::cout << "\t" << entry.first << " => " << entry.second << "\n";
 
-    throw invalid_operand("unable to find literal with value: " + in_value);
+    throw internal_error("unable to find literal with value: " + in_value, "literal table corruption");
   }
 } // end of namespace

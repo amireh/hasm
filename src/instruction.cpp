@@ -94,13 +94,14 @@ namespace hax
 
   void instruction::assign_location(loc_t in_loc)
   {
+    if (location_ != in_loc && location_ != 0x0)
+      std::cout << "** LOCATION BEING REASSIGNED from: " << location_ << " to " << in_loc << "\n";;
     location_ = in_loc;
 
     if (label_)
     {
       //~ std::cout << "defining symbol: " << label_->token() << " with address: " << location() << "\n";
-      symbol_manager *symmgr = parser::singleton().current_section()->symmgr();
-      symmgr->define(label_, location());
+      pblock_->sect()->symmgr()->define(label_, location());
     }
   }
 
@@ -264,8 +265,9 @@ namespace hax
           if (pos != 0) {
             if (infix[pos-1] == '-') sign = '-';
             else if (infix[pos-1] == '+' || infix[pos-1] == '(') sign = '+';
-            else throw invalid_operand("can not evaluate the sign of external reference '" + ref->token() +
-              "' in expression: " + infix);
+            else
+              throw invalid_operand("can not evaluate the sign of external reference '"
+              + ref->token() + "' in expression: " + infix, line_);
           }
 
           // save the last position we found this token at, so if there's another
@@ -309,6 +311,11 @@ namespace hax
   void instruction::postprocess()
   {
     construct_relocation_records();
+    if (operand_ && operand_->is_symbol()) {
+      symbol* sym = static_cast<symbol*>(operand_);
+      if (is_assemblable() && !sym->is_evaluated() && !sym->is_external_ref())
+        throw undefined_symbol(sym->token());
+    }
   }
 
   operand* instruction::get_operand() const { return operand_; }
@@ -318,4 +325,13 @@ namespace hax
     return pblock_;
   }
 
+  string_t const& instruction::line() const
+  {
+    return line_;
+  }
+
+  void instruction::__assign_block(program_block* block)
+  {
+    pblock_ = block;
+  }
 } // end of namespace

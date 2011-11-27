@@ -51,7 +51,7 @@ namespace hax
     opcode_fmt_t tuple = parser::singleton().opcode_from_token(in_token, &ec);
 
     if (ec != 0)
-      throw unrecognized_operation("attempting to create an instruction of an unrecognized operation: " + in_token);
+      throw unrecognized_operation("attempting to create an instruction of an unrecognized operation: " + in_token, in_block->name());
 
     instruction_t *inst = 0;
     opcode_t opcode = std::get<0>(tuple);
@@ -81,7 +81,7 @@ namespace hax
         inst = new directive(opcode, in_token, in_block);
         break;
       default:
-        throw invalid_format("unrecognized format for operation: " + in_token);
+        std::cerr << "warning: attempting to create an instruction of an unknown format! " << std::get<1>(tuple) << ", aborting\n";
     }
 
     return inst;

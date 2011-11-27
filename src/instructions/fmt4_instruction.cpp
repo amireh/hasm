@@ -111,7 +111,7 @@ namespace hax
       //~ construct_relocation_records();
 
     } else {
-      throw invalid_addressing_mode(this->line_);
+      throw invalid_addressing_mode("indirect addressing mode can not be used in extended format", this->line_);
     }
 
     if (VERBOSE)

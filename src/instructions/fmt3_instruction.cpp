@@ -178,7 +178,7 @@ namespace hax
           << target_address << "\n";
 
       } else {
-        throw target_out_of_bounds(utility::stringify(target_address) + " in " + this->line_);
+        throw target_out_of_bounds(utility::stringify(target_address), this->line_);
       }
     }
 

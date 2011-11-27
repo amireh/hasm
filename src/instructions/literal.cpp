@@ -19,6 +19,7 @@
  */
 
 #include "literal.hpp"
+#include "program_block.hpp"
 #include <cassert>
 #include <cmath>
 
@@ -33,6 +34,7 @@ namespace hax
     assembled_(false)
   {
     format_ = format::fmt_literal;
+    std::cout << "Literal created in block: " << block->name() << "\n";
 	}
 
 	literal::~literal()
@@ -81,9 +83,7 @@ namespace hax
 
     // since one byte holds 2 hex digits, we divide the length by two
     if (!is_ascii_) {
-      std::cout << "shrinking hexa constant from: " << length_ << " to:";
       length_ = std::ceil(length_ / 2);
-      std::cout << length_ << "\n";
     }
   }
 

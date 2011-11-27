@@ -88,6 +88,7 @@ namespace hax
 
     opcode_t opcode() const;
     loc_t location() const;
+    const string_t& line() const;
 
     program_block* block() const;
 
@@ -135,6 +136,8 @@ namespace hax
      **/
     virtual void assign_operand(string_t const& in_token);
     virtual void assign_operand(operand* in_operand);
+
+    void __assign_block(program_block* block);
 
     /**
      * the source line of this instruction (used for printing purposes)

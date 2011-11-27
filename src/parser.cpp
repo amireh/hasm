@@ -27,6 +27,7 @@
 #include <ostream>
 #include <exception>
 #include <stdexcept>
+#include <typeinfo>
 
 namespace hax
 {
@@ -195,11 +196,13 @@ namespace hax
     std::cout << "+- Pass1: \n";
     std::cout << "+- \n";
     std::cout << "+- Analyzing entries...\n";
+    int line_nr = 0;
 
     while (!in.eof())
     //~ for (int i=0; i < 4; ++i)
     {
       string_t line = "";
+      ++line_nr;
 
       // parse the line first
       while (true)
@@ -274,7 +277,7 @@ namespace hax
       // check whether this is a CSECT or START entry
       if (tokens.size() >= 2 && (line.find("START") != std::string::npos || line.find("CSECT") != std::string::npos))
       {
-        __register_section(tokens.front());
+        __register_section(tokens.front(), line);
       }
 
       // if by now we were not assigned a control section, abort
@@ -285,19 +288,32 @@ namespace hax
       // find out whether the first token is a label or an opcode
       if (!is_op(tokens.front()))
       {
-        label = csect_->symmgr()->declare(tokens.front());
-        tokens.pop_front();
+        if (csect_->symmgr()->is_defined(tokens.front()))
+          throw symbol_redifinition("token '" + tokens.front() + "'", line);
+
+        try {
+          label = csect_->symmgr()->declare(tokens.front());
+          tokens.pop_front();
+        } catch (hax_error& e) {
+          track_error(e);
+          continue; // can't proceed if label couldn't be defined
+        }
       }
 
       // validation check: was it only a label entry?
       if (tokens.empty())
-        throw invalid_entry("missing opcode and operands in entry: " + line);
+        throw invalid_entry("missing opcode and operands in entry: ", line);
 
       else if (!is_op(tokens.front()))
-        throw invalid_opcode("unrecognized operation: " + tokens.front());
+        throw invalid_entry("unrecognized operation: " + tokens.front(), line);
 
-      inst = instruction_factory::singleton().create(tokens.front(), csect_->block());
-      tokens.pop_front();
+      try {
+        inst = instruction_factory::singleton().create(tokens.front(), csect_->block());
+        tokens.pop_front();
+      } catch (hax_error& e)
+      {
+        track_error(e);
+      }
 
       if (label)
         inst->assign_label(label);
@@ -306,29 +322,42 @@ namespace hax
       assert(tokens.size() <= 1);
       for (auto _token : tokens)
       {
-        inst->assign_operand(_token);
+        try {
+          inst->assign_operand(_token);
+        } catch (hax_error& e)
+        {
+          track_error(e);
+        }
       }
 
       inst->assign_line(line);
       csect_->block()->add_instruction(inst);
-      //~ inst->assign_location(locctr_);
-      inst->preprocess();
+      try {
+        inst->preprocess();
+      } catch (hax_error& e) {
+        track_error(e);
+      }
       csect_->block()->step();
-      //~ locctr_ += inst->length();
 
       std::cout << inst << "\n";
 
-      //~ instructions_.push_back(inst);
       inst = 0;
     }
 
-    std::cout << "\n+-\n";
+    std::cout << "+-\n";
     if (VERBOSE)
       csect_->symmgr()->dump(std::cout);
 
     // dump stats
     std::cout
-      << "+-Pass1: complete\n"
+      << "+- Pass1: " << (errors_.empty() ? "complete" : "failed") << "\n";
+
+    if (!errors_.empty())
+    {
+      return report_errors();
+    }
+
+    std::cout
       << "+-\tNumber of control sections: " << csects_.size() << "\n";
     for (auto sect : csects_)
       std::cout << sect;
@@ -343,6 +372,12 @@ namespace hax
     }
 
     in.close();
+
+    std::cout << "+- Pass2: " << (errors_.empty() ? "complete" : "failed") << "\n";
+    if (!errors_.empty())
+    {
+      return report_errors();
+    }
   }
 
   loc_t parser::base() const
@@ -363,16 +398,43 @@ namespace hax
     return csect_;
   }
 
-  void parser::__register_section(std::string in_name)
+  void parser::__register_section(std::string in_name, const string_t& in_line)
   {
     // verify no other control section is already registered with this name
     for (auto sect : csects_)
       if (sect->name() == in_name)
-        throw invalid_entry("attempt to re-define a control section named '" + in_name + "'");
+        throw invalid_entry("attempt to re-define a control section named '" + in_name + "'", in_line);
 
     std::cout << "info: registering a control section '" << in_name << "'\n";
     csect_t *new_sect = new control_section(in_name);
     csects_.push_back(new_sect);
     csect_ = new_sect;
+  }
+
+  void parser::report_errors() const
+  {
+    for (const string_t& e : errors_) {
+      std::cout << e;
+    }
+  }
+
+  void parser::track_error(hax_error& err)
+  {
+    /*hax_error* errp = &err;
+    errp = dynamic_cast<parser_error*>(errp);
+    if (errp) {
+      errors_.push_back(errp->what());
+      return;
+    }
+
+    errp = dynamic_cast<internal_error*>(errp);
+    if (errp) {
+      errors_.push_back(errp->what());
+      return;
+    }*/
+    std::ostringstream s;
+    s << "+- ERROR '" << err.type() << "': " << err.what()
+      << " (in \"" << err.source() << "\")\n";
+    errors_.push_back(s.str());
   }
 } // end of namespace
