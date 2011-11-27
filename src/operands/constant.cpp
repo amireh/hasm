@@ -107,29 +107,12 @@ namespace hax
   {
     instruction* lit = inst_->block()->sect()->symmgr()->lookup_literal(token_);
     value_ = lit->location();
-
-    /*std::stringstream hex_repr;
-    hex_repr << std::hex;
-    for (auto c : token_)
-      if (is_ascii)
-        hex_repr << (int)c;
-      else
-        hex_repr << c;
-
-    hex_repr >> value_;
-
-    length_ = token_.size();
-
-    // since one byte holds 2 hex digits, we divide the length by two
-    if (!is_ascii)
-      length_ /= std::ceil(2);*/
   }
 
   void constant::handle_constant()
   {
     value_ = utility::convertTo<int>(token_);
     length_ = token_.size();
-    //~ std::cout << "converted constant '" << token_ << "' into " << value_ << "\n";
   }
 
   void constant::handle_ascii_constant()
@@ -157,18 +140,14 @@ namespace hax
     length_ = stripped_.size();
 
     // since one byte holds 2 hex digits, we divide the length by two
-    if (!is_ascii) {
-      std::cout << "shrinking hexa constant from: " << length_ << " to:";
+    if (!is_ascii)
       length_ = std::ceil(length_ / 2);
-      std::cout << length_ << "\n";
-    }
   }
 
   void constant::handle_current_loc()
   {
     value_ = parser::singleton().sect()->block()->locctr();
     length_ = 0;
-    std::cout << "assigned location counter " << value_ << "\n";
-    //~ std::cout << "converted constant '" << token_ << "' into " << value_ << "\n";
+    //~ std::cout << "assigned location counter " << value_ << "\n";
   }
 } // end of namespace

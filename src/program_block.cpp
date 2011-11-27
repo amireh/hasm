@@ -60,10 +60,9 @@ namespace hax
 
   void program_block::step()
   {
-    if (!instructions_.empty()) {
+    if (!instructions_.empty())
       locctr_ += instructions_.back()->length();
-      std::cout << "stepping location counter by " << instructions_.back()->length() << ", now is=" << locctr_ << "\n";
-    }
+
   }
 
   void program_block::shift(int in_amount)

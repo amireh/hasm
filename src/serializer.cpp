@@ -30,6 +30,7 @@
 namespace hax
 {
   extern bool VERBOSE;
+  extern bool DELIMITED_OUTPUT;
 
 	serializer* serializer::__instance = 0;
 	const uint8_t serializer::t_record::maxlen = 0x1E;
@@ -124,10 +125,16 @@ namespace hax
       //~ std::cout << "\tchecking whether symbol '" << sym->token() << "' is an external ref or definition\n";
       if (sym->is_external_def())
       {
+        if (DELIMITED_OUTPUT)
+          d_record_str << '^';
         d_record_str << utility::expand(sym->token(), 6, ' ');
+        if (DELIMITED_OUTPUT)
+          d_record_str << '^';
         d_record_str << std::hex << std::setw(6) << std::setfill('0') << sym->address();
         std::cout << "found an external definition: " << sym << "\n";
       } else if (sym->is_external_ref()) {
+        if (DELIMITED_OUTPUT)
+          d_record_str << '^';
         r_record += utility::expand(sym->token(), 6, ' ');
         std::cout << "found an external reference: " << sym << "\n";
       }
@@ -207,14 +214,20 @@ namespace hax
     for (t_record* rec : t_records)
     {
       out << std::uppercase << std::hex << std::setfill('0');
-      out << 'T' << '^' << std::setw(6) << rec->address;
-      out << '^' << std::setw(2) << rec->length;
+      out << 'T';
+      if (DELIMITED_OUTPUT)
+        out << '^';
+      out << std::setw(6) << rec->address;
+      if (DELIMITED_OUTPUT)
+        out << '^';
+      out << std::setw(2) << rec->length;
       //~ out << std::resetiosflags;
 
       //~ out << std::hex << std::uppercase << std::setw(6) << std::setfill('0');
       for (auto inst : rec->instructions)
       {
-        out << '^';
+        if (DELIMITED_OUTPUT)
+          out << '^';
         out << std::setw(inst->length() * 2) << std::setfill('0') << inst->objcode();
       }
       //~ out << std::resetiosflags;
@@ -234,9 +247,22 @@ namespace hax
     for (m_record *rec : m_records)
     {
       out << std::uppercase << std::hex << std::setfill('0');
-      out << 'M' << '^' << std::setw(6) << rec->location;
-      out << '^' << std::setw(2) << rec->length;
-      out << '^' << rec->value;
+      out << 'M';
+
+      if (DELIMITED_OUTPUT)
+        out << '^';
+
+      out << std::setw(6) << rec->location;
+
+      if (DELIMITED_OUTPUT)
+        out << '^';
+
+      out << std::setw(2) << rec->length;
+
+      if (DELIMITED_OUTPUT)
+        out << '^';
+
+      out << rec->value;
       out << '\n';
     }
     // and clean em up

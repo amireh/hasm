@@ -25,6 +25,7 @@ ENDFIL  LDA       =C'EOF'
 BUFFER  RESB      4096
 BUFEND  EQU       *
 MAXLEN  EQU       BUFEND-BUFFER
+        END       FIRST
 ;
 ; SUBROUTINE TO READ RECORD INTO BUFFER
 ;
@@ -60,5 +61,4 @@ WLOOP   TD        =X'05'
         TIXR      T
         JLT       WLOOP
         RSUB
-        END       FIRST
 ;~ *       =X'05'
