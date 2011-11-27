@@ -66,7 +66,7 @@ namespace hax
     return false;
   }
 
-  void serializer::process(std::list<instruction_t*> const& instructions, string_t const& out_path)
+  void serializer::process(csect_t* in_sect, string_t const& out_path)
   {
     std::ofstream out(out_path);
     if (!out.is_open() || !out.good())
@@ -75,6 +75,8 @@ namespace hax
     }
 
     std::cout << "+- Serializer: writing object program\n";
+    std::list<instruction_t*> const& instructions = in_sect->instructions();
+    symbol_manager *symmgr = in_sect->symmgr();
     //~ std::list<instruction_t*> const& instructions = parser::singleton().instructions();
     //~ std::list<instruction_t*> instructions;
     //~ for (auto pblock : parser::singleton().pblocks())
@@ -89,17 +91,18 @@ namespace hax
 
     std::vector<t_record*> t_records;
     std::vector<m_record*> m_records;
+    //std::vector<d_record*> d_records;
+    //std::vector<r_record*> r_records;
 
     instruction_t const* inst = 0;
 
     // TODO: write HEADER record
     inst = instructions.front();
     std::string prog_name = inst->label()->token();
-    if (prog_name.size() > 7)
+    if (prog_name.size() > 6)
       throw std::runtime_error("program name is too long");
 
-    while (prog_name.size() < 6)
-      prog_name.push_back(' ');
+    prog_name = utility::expand(prog_name, 6, ' ');
 
     out << 'H' << prog_name;
     out << "000000"; // relocatable program
@@ -108,7 +111,34 @@ namespace hax
     out << '\n';
     inst = 0;
 
-    // prepare the T records
+    // prepare the D and R records
+    // TODO: optimize the symbols fetched here (only get user-defined ones)
+    string_t d_record = "D";
+    string_t r_record = "R";
+    std::ostringstream d_record_str;
+    d_record_str << 'D'  << std::uppercase;
+    for (auto entry : symmgr->symbols())
+    {
+      symbol_t *sym = entry.second;
+      std::cout << "\tchecking whether symbol '" << sym->token() << "' is an external ref or definition\n";
+      if (sym->is_external_def())
+      {
+        d_record_str << utility::expand(sym->token(), 6, ' ');
+        d_record_str << std::hex << std::setw(6) << std::setfill('0') << sym->address();
+        std::cout << "found an external definition: " << sym << "\n";
+      } else if (sym->is_external_ref()) {
+        r_record += utility::expand(sym->token(), 6, ' ');
+        std::cout << "found an external reference: " << sym << "\n";
+      }
+    }
+
+    d_record = d_record_str.str();
+    if (d_record.size() > 1)
+      out << d_record << "\n";
+    if (r_record.size() > 1)
+      out << r_record << "\n";
+
+    // prepare T and M records
     t_record *rec = new t_record();
     rec->address = instructions.front()->location();
     rec->length = 0x00;

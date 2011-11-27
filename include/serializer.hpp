@@ -23,6 +23,7 @@
 
 #include "hax.hpp"
 #include "instruction.hpp"
+#include "control_section.hpp"
 
 namespace hax
 {
@@ -37,7 +38,7 @@ namespace hax
     /**
      * writes the object program in out using the given set of instructions
      **/
-    void process(std::list<instruction_t*> const& instructions, string_t const& out);
+    void process(csect_t* in_sect, string_t const& out);
 
     protected:
 
@@ -61,6 +62,15 @@ namespace hax
       uint32_t length;
       instruction_t* inst;
     };
+
+    /*struct d_record {
+      uint32_t location;
+      symbol_t* sym;
+    };
+
+    struct r_record {
+      symbol_t* sym;
+    };*/
 
     bool requires_new_trecord(t_record* rec, instruction_t* inst);
 	};

@@ -29,6 +29,7 @@ namespace hax
 {
   class symbol_manager {
     public:
+    typedef std::map<string_t, symbol_t*> symbols_t;
 
     //static symbol_manager* singleton_ptr();
     //static symbol_manager& singleton();
@@ -66,8 +67,11 @@ namespace hax
 
     void dump(std::ostream& out) const;
 
+    symbols_t const& symbols() const;
+
+    void __undefine(string_t const& in_sym);
+
     protected:
-    typedef std::map<string_t, symbol_t*> symbols_t;
 
     symbols_t symbols_;
 

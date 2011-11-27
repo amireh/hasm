@@ -64,6 +64,7 @@ namespace hax
     length_ = 0;
 
     assemblable_ = false;
+    symbol_manager* symmgr = parser::singleton().sect()->symmgr();
 
     if (mnemonic_ == "BYTE" || mnemonic_ == "WORD")
     {
@@ -130,6 +131,31 @@ namespace hax
 
       parser::singleton().__register_section(operand_->token());
     }*/
+    else if (mnemonic_ == "EXTREF") {
+      std::vector<std::string> tokens = utility::split(operand_->token(), ',');
+      for (auto token : tokens) {
+        symbol_t* sym = symmgr->declare(token);
+        symmgr->define(sym, 0x0, true /* assign both value and address to 0 */);
+        sym->set_external_ref(true);
+      }
+
+      symmgr->__undefine(operand_->token());
+      operand_ = 0;
+    } else if (mnemonic_ == "EXTDEF") {
+      std::cout << "Registering external symbol definitions:";
+
+      //~ std::vector<std::string> tokens = ;
+      for (auto token : utility::split(operand_->token(), ',')) {
+        symbol_t* sym = symmgr->declare(token);
+        sym->set_external_def(true);
+
+        std::cout << sym->token() << " ";
+      }
+      std::cout << "\n";
+
+      symmgr->__undefine(operand_->token());
+      operand_ = 0;
+    }
   }
 
   loc_t directive::length() const

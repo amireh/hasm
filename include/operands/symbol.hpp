@@ -46,10 +46,29 @@ namespace hax
     loc_t address() const;
     void set_has_real_value(bool f);
 
+    /**
+     * symbols defined with an EXTREF asm directive are flagged as external
+     * references and evaluate to 0 and must be targetting in immediate (fmt4) mode
+     *
+     * external references will be consumed in an R record by the Serializer
+     **/
+    bool is_external_ref() const;
+
+    /**
+     * symbols defined with an EXTDEF asm directive are flagged as external
+     * definitions and will be consumed by the Serializer in a D record
+     **/
+    bool is_external_def() const;
+
+    void set_external_ref(bool f);
+    void set_external_def(bool f);
+
     protected:
 
     loc_t address_;
     bool has_real_value_;
+    bool external_ref_;
+    bool external_def_;
     //~ string_t label_;
 
     void copy_from(const symbol&);

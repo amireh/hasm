@@ -79,6 +79,8 @@ namespace hax
      **/
     void __add_instruction(instruction_t* in_inst);
 
+    instructions_t const& instructions() const;
+
     /**
      * assigns addresses to all registered program blocks, then attempts to assemble
      * all registered instructions

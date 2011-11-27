@@ -131,4 +131,18 @@ namespace hax
     }
   }
 
+  symbol_manager::symbols_t const&
+  symbol_manager::symbols() const
+  {
+    return symbols_;
+  }
+
+  void symbol_manager::__undefine(string_t const& in_sym)
+  {
+    symbol_t *sym = lookup(in_sym);
+    if (sym) {
+      //~ delete sym;
+      symbols_.erase(in_sym);
+    }
+  }
 } // end of namespace

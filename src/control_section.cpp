@@ -101,11 +101,11 @@ namespace hax
     instructions_.push_back(in_inst);
   }
 
-  /*const control_section::instructions_t&
+  const control_section::instructions_t&
   control_section::instructions() const
   {
     return instructions_;
-  }*/
+  }
 
   void
   control_section::assemble()
@@ -128,7 +128,7 @@ namespace hax
   void
   control_section::serialize(string_t const& out_path)
   {
-    serializer::singleton().process(instructions_, out_path);
+    serializer::singleton().process(this, out_path);
   }
 
 } // end of namespace hax

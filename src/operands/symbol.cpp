@@ -30,7 +30,9 @@ namespace hax
 	symbol::symbol(string_t const& in_label)
   : operand(in_label),
     address_(0x0),
-    has_real_value_(false)
+    has_real_value_(false),
+    external_ref_(false),
+    external_def_(false)
   {
 
     type_ = t_symbol;
@@ -104,5 +106,23 @@ namespace hax
   void symbol::set_has_real_value(bool f)
   {
     has_real_value_ = f;
+  }
+
+  bool symbol::is_external_ref() const
+  {
+    return external_ref_;
+  }
+
+  bool symbol::is_external_def() const
+  {
+    return external_def_;
+  }
+  void symbol::set_external_ref(bool f)
+  {
+    external_ref_ = f;
+  }
+  void symbol::set_external_def(bool f)
+  {
+    external_def_ = f;
   }
 } // end of namespace

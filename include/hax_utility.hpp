@@ -149,6 +149,22 @@ namespace hax { namespace utility {
     return true;
   }
 
+  /**
+   * suffixes given string with `fill` until it spans `size` characters
+   **/
+  inline static
+  std::string expand(std::string const& in, size_t size, char fill)
+  {
+    if (in.size() >= size)
+      return in;
+
+    std::string out(in);
+    while (out.size() < size)
+      out.push_back(fill);
+
+    return out;
+  }
+
   inline static
   bool is_operator(char c)
   {

@@ -85,6 +85,9 @@ namespace hax
     int disp = 0x0;
     uint32_t targeting_flags = 0x0;
 
+    if (indexed_)
+      targeting_flags |= 0x1 << 23;
+
     assert(operand_);
 
     // all extended format operations require relocation except constant-operanded ones
@@ -99,20 +102,21 @@ namespace hax
     {
       // if it's an immediate operand
       //~ if (operand_->is_constant()) {
-        targeting_flags = 0x1 << 24;
+        targeting_flags |= 0x1 << 24;
         relocatable_ = false;
       //~ }
     } else if (addr_mode_ == addressing_mode::simple) {
-      targeting_flags = 0x3 << 24; // neither indirect nor immediate
+      targeting_flags |= 0x3 << 24; // neither indirect nor immediate
+      //~ assert(false);
     } else {
       throw invalid_addressing_mode(this->line_);
     }
 
     if (VERBOSE)
     std::cout
-      << "Immediate target address = "
+      << "Fmt4 target address = "
       << std::hex << std::uppercase
-      << target_address << "\n";
+      << target_address << (indexed_ ? "(indexed)" : "") << "\n";
 
     // discard the 5 highest-order half-bytes (for negative values calculated with 2's complement)
     objcode_ = (opcode_ << 24) | addr_mode_ | targeting_flags;
