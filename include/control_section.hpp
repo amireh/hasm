@@ -54,6 +54,11 @@ namespace hax
     symbol_manager* symmgr() const;
 
     /**
+     * the total size of this control section in bytes (sum of lengs of all pblocks)
+     **/
+    uint32_t length() const;
+
+    /**
      * changes the current block to the one identified by in_name, creating it
      * if necessary
      **/
@@ -89,7 +94,13 @@ namespace hax
 
     void serialize(string_t const& out_path);
 
+    /**
+     * if an END instruction was encountered with a symbol operand, then the
+     * address of that operand is assigned as the first instruction in this
+     * control section
+     **/
     bool has_starting_address() const;
+
     loc_t starting_address();
     void assign_starting_address(loc_t);
 

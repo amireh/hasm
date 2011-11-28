@@ -31,8 +31,7 @@ namespace hax
   expression::weights_t expression::operator_weights;
 
 	expression::expression(string_t const& in_token, instruction* in_inst)
-  : operand(in_token, in_inst),
-    absolute_(false)
+  : operand(in_token, in_inst)
   {
     type_ = t_expression;
 
@@ -49,8 +48,6 @@ namespace hax
 
     to_postfix(token_, postfix_expr_);
 
-    absolute_ = true;
-
     // populate the list of (un)resolved symbols referenced in this expression
     operand_factory& op_fact = operand_factory::singleton();
     std::vector<string_t> tokens = utility::split(postfix_expr_, ' ');
@@ -59,7 +56,7 @@ namespace hax
       //~ std::cout << "\tchecking whether " << token << " is a symbol\n";
       if (op_fact.__is_symbol(token))
       {
-        symbol_manager* symmgr = parser::singleton().current_section()->symmgr();
+        symbol_manager* symmgr = inst_->block()->sect()->symmgr();
         extrefs_.push_back(symmgr->declare(token));
       }
     }
@@ -86,7 +83,6 @@ namespace hax
 
   void expression::copy_from(const expression& src)
   {
-    this->absolute_ = src.absolute_;
   }
 
   void expression::evaluate()
@@ -154,7 +150,6 @@ namespace hax
 
   void expression::to_postfix(string_t const& in, string_t &out)
   {
-    //~ absolute_ = true;
 
     std::vector<char> operators;
     std::vector<std::string> operands;
@@ -228,26 +223,13 @@ namespace hax
       operators.pop_back();
     }
 
-    /*for (auto _operand : operands)
-    {
-      if (_operand[0] < '0' || _operand[0] > '9')
-      {
-        std::cout << "\tfound a relative operand: '" << _operand << "'\n";
-
-        absolute_ = false;
-        break;
-      }
-    }*/
-
     //~ std::cout << "evaluating " << (absolute_ ? "constant" : "relative") << " postfix expression: " << out << "\n";
-    //~ return evalute_postfix(out/*, operands*/);
-    //~ return out;
   }
 
   int expression::evaluate_postfix(std::string in_expr/*, std::vector<std::string> in_operands*/)
   {
     string_t out = "";
-    //~ std::cout << "converting a postfix expr with " << in_operands.size() << " '" << in_expr << "'\n";
+
     std::vector<string_t> operands;
     uint64_t result_ = 0x0;
     string_t operand_str = "";
@@ -276,15 +258,8 @@ namespace hax
       operands.pop_back();
       string_t res = operands.back() + c + tmp;
 
-      //~ std::cout << res << "\n";
-      //~ operand* lhs = operand_factory::singleton().create(operands.back());
-      //~ operand* rhs = operand_factory::singleton().create(tmp);
-      //~ lhs->evaluate();
-      //~ rhs->evaluate();
       result_ = apply_operator(c, utility::convertTo<int>(operands.back()), utility::convertTo<int>(tmp));
-      //~ result_ = apply_operator(c, lhs->value(), rhs->value());
-      //~ delete lhs;
-      //~ delete rhs;
+
       operands.pop_back();
       operands.push_back(stringify(result_));
     }
@@ -293,11 +268,6 @@ namespace hax
     //~ std::cout << "result of postfix expression: " << in_expr << " = " << result_ << "\n";
 
     return result_;
-  }
-
-  bool expression::is_absolute() const
-  {
-    return absolute_;
   }
 
   int expression::apply_operator(char op, int lhs, int rhs)

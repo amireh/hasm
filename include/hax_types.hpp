@@ -39,8 +39,6 @@ namespace hax {
   typedef std::string string_t;
   typedef char format_t;
   typedef std::tuple<opcode_t, format_t> opcode_fmt_t;
-  typedef std::vector<hax_error*> errors_t;
-
 }
 
 #endif

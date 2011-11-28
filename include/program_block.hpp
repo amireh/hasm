@@ -29,6 +29,19 @@ namespace hax
   class control_section;
   typedef control_section csect_t;
 
+  /**
+   * control sections can contain an arbitrary number of program blocks which
+   * can hold a number of instructions, and maintain their own location counter
+   *
+   * once a control section is being assembled, its program blocks are logically
+   * rearranged based on their length (determined by their locctr) and are
+   * assigned an offset address which will be added to every instruction they
+   * contain thus producing a correct address just as if the user had physically
+   * rearranged entries in the input file
+   *
+   * program blocks are uniquely identified by name strings and are created when
+   * the USE assembler directive is encountered
+   **/
   class program_block {
     public:
 
@@ -42,19 +55,46 @@ namespace hax
     program_block(const program_block& src)=delete;
 		program_block& operator=(const program_block& rhs)=delete;
 
+    /**
+     *
+     **/
     loc_t locctr() const;
     string_t const& name() const;
-    void step();
 
+    /**
+     * increments the location counter by an amount equal to the latest instruction's
+     * length,
+     *
+     * @param inst
+     *  if an instruction is passed, its length will be used, otherwise the last
+     *  instruction in this block's length will be used instead
+     **/
+    void step(instruction* inst=0);
+
+    /**
+     * increments the locctr by in_amount, and shifts the addresses of all registered
+     * instructions by the same amount
+     **/
     void shift(int in_amount);
+
+    /**
+     * the length of a block is equal to the lengths of all registered instructions
+     * in it
+     **/
     size_t length() const;
 
+    /**
+     * the csect this block belongs to
+     **/
     control_section *sect() const;
 
     /**
      * registers the given instruction with this program block and assigns
-     * an address to it based on this object's location counter, finally the
-     * counter is incremented by an amount equal to the instruction's length
+     * an address to it based on the location counter
+     *
+     * @warning
+     * the location counter is not automatically stepped, see program_block::step()
+     * for more info
      **/
     void add_instruction(instruction_t* in_inst);
 

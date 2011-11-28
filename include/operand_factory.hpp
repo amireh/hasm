@@ -48,9 +48,27 @@ namespace hax
      **/
     operand_t* create(string_t const& opcode_token, instruction* in_inst);
 
+    /**
+     * constants begin with:
+     *  1. a number
+     *  2. C' to denote an ASCII constant, or
+     *  3. X' to denote a hexadecimal constant
+     **/
     bool __is_constant(string_t const& token);
+
+    /**
+     * literals must begin with either =C' or =X'
+     **/
     bool __is_literal(string_t const& token);
+
+    /**
+     * symbol names must begin with a character, and can not contain any operator character
+     **/
     bool __is_symbol(string_t const& token);
+
+    /**
+     * tokens that contain any operators are taken to be expressions
+     **/
     bool __is_expression(string_t const& token);
 
     private:

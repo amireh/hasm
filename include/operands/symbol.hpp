@@ -27,6 +27,13 @@
 
 namespace hax
 {
+  /**
+   * Symbols could be labels, user-defined symbols, or external references.
+   *
+   * A symbol might have a value in the case it's user-defined using the EQU
+   * asm directive, an address unless it's an external reference, or both for
+   * label definitions.
+   **/
   class symbol : public operand {
     public:
 
@@ -36,15 +43,36 @@ namespace hax
 		symbol& operator=(const symbol& rhs);
 		virtual ~symbol();
 
-    //~ string_t const& label() const;
+    /**
+     * nothing to evaluate here, symbols have their values/addresses externally
+     **/
     virtual void evaluate();
 
+    /**
+     * sets the address of this symbol equal to in_address, effectively "evaluating" it
+     **/
     void assign_address(loc_t in_address);
 
+    /**
+     * if it's a user-defined symbol, the returned value is the assigned one,
+     * otherwise the address is returned as a value
+     **/
     virtual uint32_t value() const;
 
+    /**
+     * the address of the instruction in which this symbol has first appeared
+     * and is considered a label for
+     **/
     loc_t address() const;
-    void set_has_real_value(bool f);
+
+    /**
+     * if a symbol is flagged as user-defined, symbol::value() will return
+     * this symbol's _value_ field (which should be assigned externally),
+     * otherwise the symbol will treat its address as its value
+     **/
+    void set_user_defined(bool f);
+
+    bool is_user_defined() const;
 
     /**
      * symbols defined with an EXTREF asm directive are flagged as external
@@ -66,7 +94,7 @@ namespace hax
     protected:
 
     loc_t address_;
-    bool has_real_value_;
+    bool user_defined_;
     bool external_ref_;
     bool external_def_;
     //~ string_t label_;

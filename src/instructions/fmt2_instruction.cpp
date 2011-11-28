@@ -69,7 +69,7 @@ namespace hax
 
   void fmt2_instruction::assign_operand(string_t const& in_token)
   {
-    symbol_manager *symmgr = parser::singleton().current_section()->symmgr();
+    symbol_manager *symmgr = pblock_->sect()->symmgr();
 
     std::vector<string_t> operands;
 

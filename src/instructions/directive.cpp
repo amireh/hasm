@@ -104,14 +104,14 @@ namespace hax
       try {
         operand_->evaluate();
         label_->_assign_value(operand_->value());
-        label_->set_has_real_value(true);
+        label_->set_user_defined(true);
         //~ label_->assign_address(operand_->value());
       } catch (unevaluated_operand& e) {
         std::cerr << "Warning: " << e.what() << "\n";
       }
 
       if (operand_->is_symbol())
-        static_cast<symbol*>(operand_)->set_has_real_value(true);
+        static_cast<symbol*>(operand_)->set_user_defined(true);
 
       if (!operand_->is_evaluated()) {
         string_t msg = "EQU operands must be either constant decimal integers, ";
@@ -159,7 +159,7 @@ namespace hax
       symmgr->__undefine(operand_->token());
       operand_ = 0;
     } else if (mnemonic_ == "LTORG") {
-      parser::singleton().sect()->symmgr()->dump_literal_pool();
+      pblock_->sect()->symmgr()->dump_literal_pool();
       //~ symmgr->dump_literal_pool();
     } else if (mnemonic_ == "END")
     {

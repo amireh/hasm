@@ -31,25 +31,40 @@ namespace hax
   class symbol;
   typedef symbol symbol_t;
 
+  /**
+   * Expressions can contain already defined symbols, decimal constants, and any
+   * of the following operators:
+   *  + - * / ( )
+   *
+   * An expression which contains a term that is an external reference will not
+   * be evaluated.
+   **/
   class expression : public operand {
     public:
     typedef std::map<char, int> weights_t;
     typedef std::list<symbol_t*> extrefs_t;
     static weights_t operator_weights;
 
+    /**
+     * When an expression is created, the given token is attempted to be converted
+     * into postfix notation, and tracks every symbolic term referenced in the
+     * expression body.
+     **/
 		explicit expression(string_t const& in_token, instruction* in_inst);
     expression()=delete;
     expression(const expression& src);
 		expression& operator=(const expression& rhs);
 		virtual ~expression();
 
-    virtual void evaluate();
-
     /**
-     * if the expression contains any references to symbols, then it is not
-     * a constant one
+     * Substitutes every reference defined in the expression body with its
+     * actual value, then attempts to calculate the value of the postfix expression.
+     *
+     * References to symbols must be fully evaluated before attempting to evaluate
+     * an expression, otherwise an exception of type hax::unevaluated_operand()
+     * will be thrown.
      **/
-    virtual bool is_absolute() const;
+    virtual void evaluate();
 
     extrefs_t& references();
 

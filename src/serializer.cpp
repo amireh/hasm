@@ -108,7 +108,7 @@ namespace hax
     out << std::uppercase;
     out << 'H' << prog_name;
     out << "000000"; // relocatable program
-    out << std::hex << std::setw(6) << std::setfill('0') << in_sect->block()->length(); // object program length
+    out << std::hex << std::setw(6) << std::setfill('0') << in_sect->length(); // object program length
     // ...
     out << '\n';
     inst = 0;

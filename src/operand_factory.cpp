@@ -85,7 +85,8 @@ namespace hax
 
   bool operand_factory::__is_literal(string_t const& token)
   {
-    return false;
+    return token.find("=C'") == 0
+        || token.find("=X'") == 0;
   }
 
   bool operand_factory::__is_symbol(string_t const& token)

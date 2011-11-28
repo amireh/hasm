@@ -27,6 +27,10 @@
 
 namespace hax
 {
+  /**
+   * converts a control section assembly into an object program and writes it
+   * to an output file
+   **/
   class serializer {
     public:
 
@@ -36,7 +40,7 @@ namespace hax
 		virtual ~serializer();
 
     /**
-     * writes the object program in out using the given set of instructions
+     * writes the object program in out using the given control section
      **/
     void process(csect_t* in_sect, string_t const& out);
 
@@ -64,15 +68,13 @@ namespace hax
       string_t value;
     };
 
-    /*struct d_record {
-      uint32_t location;
-      symbol_t* sym;
-    };
-
-    struct r_record {
-      symbol_t* sym;
-    };*/
-
+    /**
+     * a new T record is required when:
+     *  1. the current rec's length will be exceeded with the given inst
+     *  2. the current rec's length is already at a maximum
+     *  3. an instruction is encountered that requires a new record such as
+     *     USE, RESB, RESW
+     **/
     bool requires_new_trecord(t_record* rec, instruction_t* inst);
 	};
 } // end of namespace

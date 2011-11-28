@@ -27,6 +27,16 @@
 namespace hax
 {
   class instruction;
+
+  /**
+   * operands belong to instructions and produce a value when evaluated that is
+   * directly required by the instruction to assemble itself
+   *
+   * the evaluation logic of every operand is deduced based on its type.
+   *
+   * @note
+   * operands should not be created directly, see operand_factory
+   **/
   class operand : public loggable {
     public:
 
@@ -36,8 +46,11 @@ namespace hax
 		operand& operator=(const operand& rhs);
 		virtual ~operand();
 
+    /**
+     * attempts to produce the value of this operand, the result can be tested
+     * by calling operand::is_evaluated()
+     **/
     virtual void evaluate()=0;
-    virtual void _assign_value(uint32_t);
 
     virtual uint32_t value() const;
     virtual string_t const& token() const;
@@ -51,6 +64,13 @@ namespace hax
     bool is_expression() const;
 
     instruction* inst() const;
+
+    /**
+     * overrides the current value of the operand, and flags it as evaluated.
+     *
+     * this is internally used to assign values to symbols
+     **/
+    virtual void _assign_value(uint32_t);
 
     protected:
 

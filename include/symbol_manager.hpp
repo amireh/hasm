@@ -41,38 +41,67 @@ namespace hax
 		symbol_manager& operator=(const symbol_manager& rhs)=delete;
 
     /**
-     * registers a symbol with the given name in the symbol table if it hasn't
-     * been declared already
+     * Registers a symbol with the given name in the symbol table if it hasn't
+     * been declared already.
+     *
+     * Declared symbols have a value and address of 0x0, and are known to be
+     * "non-defined", to check for a symbol's definition, call operand::is_evaluated()
      **/
     symbol_t* const declare(string_t const& in_name);
 
     /**
-     * assigns the address in_loc to the given symbol in_symbol
+     * Assigns the address in_loc to the given symbol in_symbol.
+     *
+     * @param value_and_address
+     *  If passed as true, the given location will be assigned as both the symbol's
+     *  address AND value, this is needed when declaring external references (EXTREF)
+     *  or when defining built-in symbols such as register names and the special
+     *  operator '*'
      **/
     symbol_t* define(symbol_t* in_symbol, loc_t in_loc, bool value_and_address = false);
 
     /**
-     * returns the symbol identified by name in_name, or 0 in case it wasn't found
+     * Returns the symbol identified by name in_name, or 0 in case it wasn't found.
      **/
     symbol_t* const lookup(string_t const& in_name) const;
 
     /**
-     * convenience method for checking whether a symbol has been declared
+     * Convenience method for checking whether a symbol has been declared.
      **/
     bool is_declared(string_t const& in_name) const;
 
     /**
-     * convenience method for checking whether a symbol has been fully registered
+     * Convenience method for checking whether a symbol has been both declared
+     * and evaluated.
      **/
     bool is_defined(string_t const& in_name) const;
 
-    void dump(std::ostream& out) const;
 
     symbols_t const& symbols() const;
 
     void __undefine(string_t const& in_sym);
 
+    /**
+     * Declares a literal with in_value, and adds the given operand as a dependant
+     * of this literal. When the literal is evaluated, its dependencies will be
+     * notified by calling their operand::evaluate() method so they can use
+     * the address assigned to the literal.
+     *
+     * Literals are unique per-control-section.
+     *
+     * @param in_value
+     *  fully-qualified literal format, ie: =X'F1' or =C'FOOBAR'
+     **/
     instruction* declare_literal(string_t const& in_value, operand* in_dependency);
+
+    /**
+     * Returns a literal identified by the given value.
+     *
+     * @note
+     * this method will raise an exception of type hax::internal_error in case
+     * the literal was not found, which should really not happen and if it does
+     * it indicates a bug
+     **/
     instruction* lookup_literal(string_t const& in_value);
 
     /**
@@ -82,9 +111,14 @@ namespace hax
      *
      * When do_step is set to true, the program_block of this section will
      * step its location counter when the literal table is dumped. This is required
-     * when no LTORG is specified, and the pool is dumped at the end of the file
+     * when no LTORG is specified, and the pool is dumped at the end of the file.
      **/
     void dump_literal_pool(bool do_step = false);
+
+    /**
+     * Convenience method for writing the symbol table to out.
+     **/
+    void dump(std::ostream& out) const;
 
     protected:
     typedef std::map<string_t, literal*> literals_t;

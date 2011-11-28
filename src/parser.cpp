@@ -337,7 +337,7 @@ namespace hax
       } catch (hax_error& e) {
         track_error(e);
       }
-      csect_->block()->step();
+      csect_->block()->step(inst);
 
       std::cout << inst << "\n";
 

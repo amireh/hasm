@@ -25,7 +25,7 @@ namespace hax
 {
 	/*!
    * @brief
-   * loggable objects respond to the operator<< for logging to an std::ostream.
+   * loggable objects respond to the operator<< for logging to an std::ostream
 	 */
 	class loggable
 	{

@@ -30,7 +30,7 @@ namespace hax
 	symbol::symbol(string_t const& in_label, instruction* in_inst)
   : operand(in_label, 0),
     address_(0x0),
-    has_real_value_(false),
+    user_defined_(false),
     external_ref_(false),
     external_def_(false)
   {
@@ -89,13 +89,7 @@ namespace hax
   }
 
   uint32_t symbol::value() const {
-    //~ if (!evaluated_)
-      //~ return address_;
-    if (has_real_value_)
-      return value_;
-    else
-      return address_;
-    //~ return value_;
+    return (user_defined_) ? value_ : address_;
   }
 
   loc_t symbol::address() const
@@ -103,9 +97,14 @@ namespace hax
     return address_;
   }
 
-  void symbol::set_has_real_value(bool f)
+  void symbol::set_user_defined(bool f)
   {
-    has_real_value_ = f;
+    user_defined_ = f;
+  }
+
+  bool symbol::is_user_defined() const
+  {
+    return user_defined_;
   }
 
   bool symbol::is_external_ref() const

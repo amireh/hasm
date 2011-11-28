@@ -61,14 +61,19 @@ namespace hax
     return instructions_;
   }
 
-  void program_block::step()
+  void program_block::step(instruction* inst)
   {
-    if (!instructions_.empty()) {
-      std::cout << "Program block " << name_
-        << " location counter stepping to " << locctr_ + instructions_.back()->length()
-        << " from " << locctr_ << " in " << instructions_.back() << "\n";
-      locctr_ += instructions_.back()->length();
+    if (!inst) {
+      if (instructions_.empty())
+        return;
+
+      inst = instructions_.back();
     }
+
+    std::cout << "Program block " << name_
+      << " location counter stepping to " << locctr_ + inst->length()
+      << " from " << locctr_ << " in " << inst << "\n";
+    locctr_ += inst->length();
 
   }
 

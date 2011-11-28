@@ -47,6 +47,7 @@ namespace hax
      *  1. format 1: creates an instance of fmt1_instruction
      *  2. format 2: creates an instance of fmt2_instruction
      *  3. format 3/4: creates an instance of either fmt3_instruction or fmt4_instruction[1]
+     *  4. directive: creates an assembler directive instance
      *
      * this method can throw an exception of type hax::unrecognized_operation()
      * if no registered operations could be found with the given id
@@ -56,9 +57,14 @@ namespace hax
      *     is scanned for the prefix '+' that denotes if it's an extended format
      *     instruction or not
      *
+     * @note
+     * literals are not created by the factory, nor should they be, they are
+     * handled internally by the symbol manager as are symbols
+     *
      * @warning
      * the instruction factory does not retain ownership of newly created instances,
-     * it is the responsibility of the caller to free the allocated objects
+     * it is the responsibility of the caller to free the allocated objects except
+     * for in the case of symbols where ownership belongs to the symbol_manager
      **/
     instruction_t* create(string_t const& opcode_token, program_block *in_block);
 

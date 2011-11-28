@@ -182,4 +182,14 @@ namespace hax
     starting_addr_ = in_addr;
     starting_addr_set_ = true;
   }
+
+  uint32_t
+  control_section::length() const
+  {
+    int length = 0;
+    for (auto block : pblocks_)
+      length += block->length();
+
+    return length;
+  }
 } // end of namespace hax

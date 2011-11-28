@@ -137,6 +137,11 @@ namespace hax
     virtual void assign_operand(string_t const& in_token);
     virtual void assign_operand(operand* in_operand);
 
+    /**
+     * the pblock of an instruction might be needed to be re-assigned in the case
+     * of literal "instructions" when LTORG appears in a different block than
+     * the one in which the literal was specified
+     **/
     void __assign_block(program_block* block);
 
     /**
@@ -150,16 +155,29 @@ namespace hax
     bool has_label() const;
     symbol_t const* const label() const;
     objcode_t objcode() const;
-    bool is_assemblable() const;
-    bool is_relocatable() const;
-    string_t const& mnemonic() const;
-    operand* get_operand() const;
 
     /**
-     * are there no dependencies left for this instruction's object code to be
-     * assembled?
+     * some instructions, like the assembler directives, can't exactly be assembled
+     * and do not directly produce object code, this flag tracks that attribute
      **/
-    bool is_fulfilled() const;
+    bool is_assemblable() const;
+
+    /**
+     * specifies whether this instruction requires M records
+     **/
+    bool is_relocatable() const;
+
+    /**
+     * convenience helper to get the literal value of its opcode
+     **/
+    string_t const& mnemonic() const;
+
+    /**
+     * @note
+     * some instructions do not have operands, be sure to check return == 0
+     * before attempting to use the returned value
+     **/
+    operand* get_operand() const;
 
     /**
      * returns all the required relocation records for this instruction
@@ -216,7 +234,7 @@ namespace hax
     /* the literal representation of the opcode */
     string_t mnemonic_;
 
-    /** used only for printing purposes */
+    /* used only for printing purposes */
     uint8_t objcode_width_;
 
     // some assembler directives like RESB and RESW do not construct object code

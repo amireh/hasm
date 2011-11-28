@@ -26,15 +26,43 @@
 
 namespace hax
 {
+  /**
+   * Constant operands are either decimal or hexadecimal numbers, or ASCII characters,
+   * or the special operator '*' which denotes the current value of the location counter.
+   **/
   class constant : public operand {
     public:
 
+    /**
+     * The type of this constant is deduced in the constructor by checking
+     * the passed token for occurences of every format specification. If the token
+     * includes:
+     *
+     *  1. C'' then it is assumed to be an ASCII constant
+     *  2. X'' then it is assumed to be a hexadecimal constant
+     *  3. =C'' then it is assumed to be an ASCII literal
+     *  4. =X'' then it is assumed to be a hexadecimal literal
+     *  5. * then it is assumed to be the special location operator
+     *  6. /(#)*[0-9]/ then it is assumed to be a decimal constant
+     *
+     **/
 		explicit constant(string_t const& in_token, instruction* in_inst);
     constant()=delete;
     constant(const constant& src);
 		constant& operator=(const constant& rhs);
 		virtual ~constant();
 
+    /**
+     * Calculates the value of this constant.
+     *
+     * For Hex and ASCII constants, the value is extracted from the token and
+     * converted one byte at a time into its internal hexadecimal representation.
+     *
+     * For all literals, the value is simply the location of the assigned literal.
+     *
+     * For the special operator *, the location counter of the program block of
+     * this operand's instruction is used.
+     **/
     virtual void evaluate();
 
     protected:
@@ -46,7 +74,6 @@ namespace hax
     void handle_constant();
     void handle_current_loc();
     void handle_literal();
-
 
     string_t stripped_;
 
